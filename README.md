@@ -20,6 +20,13 @@ Some relevant links for you:
 * [License allowing me to do so](http://docs.fusioninvoice.com/1.2/about.html#license-agreement)
 
 Todo:
+--------------
 
 - [x] Commit latest FI Build
 - [ ] Update/Create Wiki
+
+Tagging Convention:
+-------------
+
+* Tags that have an `o` appended to the end are 'Official releases' from the fusion invoice developer.
+* Tags with an `m` appended are modified releses here on github.
