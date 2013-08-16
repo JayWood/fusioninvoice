@@ -4,7 +4,7 @@
 		$('#invoice_tax_submit').click(function()
 		{
 			$.post("<?php echo site_url('invoices/ajax/save_invoice_tax_rate'); ?>", { 
-				invoice_id: $('#invoice_id').val(),
+				invoice_id: <?php echo $invoice_id; ?>,
 				tax_rate_id: $('#tax_rate_id').val(),
 				include_item_tax: $('#include_item_tax').val()
 			},
@@ -19,7 +19,7 @@
 	});
 </script>
 
-<div id="add-invoice-tax" class="modal hide fade">
+<div id="add-invoice-tax" class="modal hide">
 	<form class="form-horizontal">
 		<div class="modal-header">
 			<a data-dismiss="modal" class="close">×</a>

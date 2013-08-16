@@ -46,7 +46,7 @@
                     <span class="label label-info"><?php echo lang('unknown'); ?></span> 
                     <?php } ?>
                 </td>
-                <td><?php echo $invoice->invoice_number; ?></td>
+                <td><a href="<?php echo site_url('guest/invoices/view/' . $invoice->invoice_id); ?>"><?php echo $invoice->invoice_number; ?></a></td>
                 <td><?php echo date_from_mysql($invoice->invoice_date_created); ?></td>
                 <td><?php echo date_from_mysql($invoice->invoice_date_due); ?></td>
                 <td><?php echo $invoice->client_name; ?></td>
@@ -63,7 +63,7 @@
                             </li>
                             <li>
                                 <a href="<?php echo site_url('guest/invoices/generate_pdf/' . $invoice->invoice_id); ?>">
-                                    <i class="icon-print"></i> <?php echo lang('open_pdf'); ?>
+                                    <i class="icon-print"></i> <?php echo lang('download_pdf'); ?>
                                 </a>
                             </li>
                         </ul>

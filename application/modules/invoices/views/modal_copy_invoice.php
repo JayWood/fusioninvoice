@@ -38,7 +38,7 @@
 	
 </script>
 
-<div id="modal_copy_invoice" class="modal hide fade">
+<div id="modal_copy_invoice" class="modal hide">
 	<form class="form-horizontal">
 		<div class="modal-header">
 			<a data-dismiss="modal" class="close">x</a>
@@ -58,7 +58,7 @@
 			<div class="control-group">
 				<label class="control-label"><?php echo lang('invoice_date'); ?>: </label>
 				<div class="controls input-append date datepicker">
-					<input size="16" type="text" name="invoice_date_created" id="invoice_date_created" value="<?php echo date_from_mysql($invoice->invoice_date_created); ?>" readonly>
+					<input size="16" type="text" name="invoice_date_created" id="invoice_date_created" value="<?php echo date_from_mysql($invoice->invoice_date_created, TRUE); ?>" readonly>
 					<span class="add-on"><i class="icon-th"></i></span>
 				</div>
 			</div>
@@ -69,7 +69,7 @@
 					<select name="invoice_group_id" id="invoice_group_id">
 						<option value=""></option>
 						<?php foreach ($invoice_groups as $invoice_group) { ?>
-						<option value="<?php echo $invoice_group->invoice_group_id; ?>" <?php if ($invoice->invoice_group_id == $invoice_group->invoice_group_id) { ?>selected="selected"<?php } ?>><?php echo $invoice_group->invoice_group_name; ?></option>
+						<option value="<?php echo $invoice_group->invoice_group_id; ?>" <?php if ($this->mdl_settings->setting('default_invoice_group') == $invoice_group->invoice_group_id) { ?>selected="selected"<?php } ?>><?php echo $invoice_group->invoice_group_name; ?></option>
 						<?php } ?>
 					</select>
 				</div>

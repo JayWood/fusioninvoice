@@ -20,7 +20,7 @@
                 width:100%;
                 padding: 0px;
             }
-            #header table td {
+            #header table td, .amount-summary td {
                 vertical-align: text-top;
                 padding: 5px;
             }
@@ -28,12 +28,16 @@
                 color:#000;
                 font-size: 18px;
             }
-            #invoice-to {
-                /*                display: table;*/
-                /*                content: "";*/
-            }
             #invoice-to td {
                 text-align: left
+            }
+            #invoice-to {
+                margin-bottom: 15px;
+            }
+            #invoice-to-right-table td {
+                padding-right: 5px;
+                padding-left: 5px;
+                text-align: right;
             }
             .seperator {
                 height: 25px
@@ -45,9 +49,6 @@
                 border:none !important;
                 background-color: white !important;
             }
-            .alignr {
-                text-align: right;
-            }
         </style>
         
 	</head>
@@ -56,6 +57,7 @@
             <table>
                 <tr>
                     <td id="company-name">
+                        <?php echo invoice_logo(); ?>
                         <h2><?php echo $quote->user_name; ?></h2>
                         <p>
                             <?php if ($quote->user_address_1) { echo $quote->user_address_1 . '<br>'; } ?>
@@ -67,39 +69,38 @@
                             <?php if ($quote->user_fax) { ?><abbr>F:</abbr><?php echo $quote->user_fax; ?><?php } ?>
                         </p>
                     </td>
-                    <td class="alignr"><h2><?php echo lang('quote'); ?> <?php echo $quote->quote_number; ?></h2></td>
+                    <td style="text-align: right;"><h2><?php echo lang('quote'); ?> <?php echo $quote->quote_number; ?></h2></td>
                 </tr>
             </table>
         </div>
         <div id="invoice-to">
             <table style="width: 100%;">
                 <tr>
-                    <td>
-                        <h2><?php echo $quote->client_name; ?></h2>
-                        <p>
+                    <td style="padding-left: 5px;">
+                        <p><?php echo lang('bill_to'); ?>:</p>
+                        <p><?php echo $quote->client_name; ?><br>
                             <?php if ($quote->client_address_1) { echo $quote->client_address_1 . '<br>'; } ?>
                             <?php if ($quote->client_address_2) { echo $quote->client_address_2 . '<br>'; } ?>
                             <?php if ($quote->client_city) { echo $quote->client_city . ' '; } ?>
                             <?php if ($quote->client_state) { echo $quote->client_state . ' '; } ?>
                             <?php if ($quote->client_zip) { echo $quote->client_zip . '<br>'; } ?>
                             <?php if ($quote->client_phone) { ?><abbr>P:</abbr><?php echo $quote->client_phone; ?><br><?php } ?>
-
                         </p>
                     </td>
                     <td style="width:40%;"></td>
-                    <td>
-                        <table>
+                    <td style="text-align: right;">
+                        <table id="invoice-to-right-table">
                             <tbody>
                                 <tr>
-                                    <td><?php echo lang('quote_date'); ?></td>
-                                    <td><?php echo date_from_mysql($quote->quote_date_created); ?></td>
+                                    <td><?php echo lang('quote_date'); ?>: </td>
+                                    <td><?php echo date_from_mysql($quote->quote_date_created, TRUE); ?></td>
                                 </tr>
                                 <tr>
-                                    <td><?php echo lang('expires'); ?></td>
-                                    <td><?php echo date_from_mysql($quote->quote_date_expires); ?></td>
+                                    <td><?php echo lang('expires'); ?>: </td>
+                                    <td><?php echo date_from_mysql($quote->quote_date_expires, TRUE); ?></td>
                                 </tr>
                                 <tr>
-                                    <td><?php echo lang('total'); ?></td>
+                                    <td><?php echo lang('total'); ?>: </td>
                                     <td><?php echo format_currency($quote->quote_total); ?></td>
                                 </tr>
                             </tbody>
@@ -109,34 +110,57 @@
             </table>
         </div>
         <div id="invoice-items">
-            <table class="table table-striped">
+            <table class="table table-striped" style="width: 100%;">
                 <thead>
                     <tr>
-                        <th><?php echo lang('qty'); ?></th>
                         <th><?php echo lang('item'); ?></th>
                         <th><?php echo lang('description'); ?></th>
-                        <th><?php echo lang('price'); ?></th>
-                        <th><?php echo lang('total'); ?></th>
+                        <th style="text-align: right;"><?php echo lang('qty'); ?></th>
+                        <th style="text-align: right;"><?php echo lang('price'); ?></th>
+                        <th style="text-align: right;"><?php echo lang('total'); ?></th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($items as $item) : ?>
+                    <?php foreach ($items as $item) { ?>
                         <tr>
-                            <td><?php echo $item->item_quantity; ?></td>
                             <td><?php echo $item->item_name; ?></td>
                             <td><?php echo $item->item_description; ?></td>
-                            <td><?php echo format_currency($item->item_price); ?></td>
-                            <td><?php echo format_currency($item->item_total); ?></td>
+                            <td style="text-align: right;"><?php echo $item->item_quantity; ?></td>
+                            <td style="text-align: right;"><?php echo format_currency($item->item_price); ?></td>
+                            <td style="text-align: right;"><?php echo format_currency($item->item_subtotal); ?></td>
                         </tr>
-                    <?php endforeach ?>
-                    <tr>
-                        <td class="no-bottom-border" colspan="3"></td>
-                        <td><?php echo lang('total'); ?>:</td>
-                        <td><?php echo format_currency($quote->quote_total); ?></td>
-                    </tr>
+                    <?php } ?>
                 </tbody>
             </table>
-            <div class="seperator"></div>
+            <table>
+                <tr>
+                    <td style="text-align: right;">
+                        <table class="amount-summary">
+                            <tr>
+                                <td style="text-align: right;"><?php echo lang('subtotal'); ?>:</td>
+                                <td style="text-align: right;"><?php echo format_currency($quote->quote_item_subtotal); ?></td>
+                            </tr>
+                            <?php if ($quote->quote_item_tax_total > 0) { ?>
+                            <tr>
+                                <td style="text-align: right;"><?php echo lang('item_tax'); ?></td>
+                                <td style="text-align: right;"><?php echo format_currency($quote->quote_item_tax_total); ?></td>
+                            </tr>
+                            <?php } ?>
+                            <?php foreach ($quote_tax_rates as $quote_tax_rate) : ?>
+                                <tr>    
+                                    <td style="text-align: right;"><?php echo $quote_tax_rate->quote_tax_rate_name . ' ' . $quote_tax_rate->quote_tax_rate_percent; ?>%</td>
+                                    <td style="text-align: right;"><?php echo format_currency($quote_tax_rate->quote_tax_rate_amount); ?></td>
+                                </tr>
+                            <?php endforeach ?>
+                            <tr>
+                                <td style="text-align: right;"><?php echo lang('total'); ?>:</td>
+                                <td style="text-align: right;"><?php echo format_currency($quote->quote_total); ?></td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+            
         </div>
 	</body>
 </html>

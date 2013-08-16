@@ -1,3 +1,5 @@
+<?php echo $this->layout->load_view('layout/alerts'); ?>
+
 <table class="table table-striped">
 
 	<thead>
@@ -27,10 +29,10 @@
 				<span class="label label-info"><?php echo lang('unknown'); ?></span> 
 				<?php } ?>
 			</td>
-			<td><?php echo $invoice->invoice_number; ?></td>
+			<td><a href="<?php echo site_url('invoices/view/' . $invoice->invoice_id); ?>" title="<?php echo lang('edit'); ?>"><?php echo $invoice->invoice_number; ?></a></td>
 			<td><?php echo date_from_mysql($invoice->invoice_date_created); ?></td>
 			<td><?php echo date_from_mysql($invoice->invoice_date_due); ?></td>
-			<td><a href="<?php echo site_url('clients/view/' . $invoice->client_id); ?>"><?php echo $invoice->client_name; ?></a></td>
+			<td><a href="<?php echo site_url('clients/view/' . $invoice->client_id); ?>" title="<?php echo lang('view_client'); ?>"><?php echo $invoice->client_name; ?></a></td>
 			<td><?php echo format_currency($invoice->invoice_total); ?></td>
 			<td><?php echo format_currency($invoice->invoice_balance); ?></td>
 			<td>
@@ -44,12 +46,17 @@
 						</li>
 						<li>
 							<a href="<?php echo site_url('invoices/generate_pdf/' . $invoice->invoice_id); ?>">
-								<i class="icon-print"></i> <?php echo lang('open_pdf'); ?>
+								<i class="icon-print"></i> <?php echo lang('download_pdf'); ?>
 							</a>
 						</li>
 						<li>
 							<a href="<?php echo site_url('mailer/invoice/' . $invoice->invoice_id); ?>">
 								<i class="icon-envelope"></i> <?php echo lang('send_email'); ?>
+							</a>
+						</li>
+                        <li>
+							<a href="#" class="invoice-add-payment" data-invoice-id="<?php echo $invoice->invoice_id; ?>">
+								<i class="icon-shopping-cart"></i> <?php echo lang('enter_payment'); ?>
 							</a>
 						</li>
 						<li>

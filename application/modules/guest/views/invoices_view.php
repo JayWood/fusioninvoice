@@ -14,7 +14,7 @@
 	<h1><?php echo lang('invoice'); ?> #<?php echo $invoice->invoice_number; ?></h1>
 
 	<div class="pull-right">
-        <a href="#" class="btn" id="btn_generate_pdf" data-invoice-id="<?php echo $invoice_id; ?>"><i class="icon-print"></i> <?php echo lang('open_pdf'); ?></a>
+        <a href="<?php echo site_url('guest/invoices/generate_pdf/' . $invoice->invoice_id); ?>" class="btn" id="btn_generate_pdf" data-invoice-id="<?php echo $invoice_id; ?>"><i class="icon-print"></i> <?php echo lang('download_pdf'); ?></a>
 	</div>
 
 </div>
@@ -89,7 +89,7 @@
                     <?php foreach ($items as $item) { ?>
                     <tr class="item">
                         <td><?php echo $item->item_name; ?></td>
-                        <td><?php echo $item->item_description; ?></td>
+                        <td><?php echo nl2br($item->item_description); ?></td>
                         <td><?php echo $item->item_quantity; ?></td>
                         <td><?php echo format_currency($item->item_price); ?></td>
                         <td><?php echo format_currency($item->item_subtotal); ?></td>

@@ -11,8 +11,8 @@ if (!defined('BASEPATH'))
  * @package		FusionInvoice
  * @author		Jesse Terry
  * @copyright	Copyright (c) 2012 - 2013, Jesse Terry
- * @license		http://www.fusioninvoice.com/license.txt
- * @link		http://www.fusioninvoice.
+ * @license		http://www.fusioninvoice.com/support/page/license-agreement
+ * @link		http://www.fusioninvoice.com
  * 
  */
 
@@ -25,9 +25,12 @@ class Payment_Methods extends Admin_Controller {
 		$this->load->model('mdl_payment_methods');
 	}
 	
-	public function index()
+	public function index($page = 0)
 	{
-		$this->layout->set('payment_methods', $this->mdl_payment_methods->paginate()->result());
+        $this->mdl_payment_methods->paginate(site_url('payment_methods/index'), $page);
+        $payment_methods = $this->mdl_payment_methods->result();
+        
+		$this->layout->set('payment_methods', $payment_methods);
 		$this->layout->buffer('content', 'payment_methods/index');
 		$this->layout->render();
 	}
@@ -47,7 +50,10 @@ class Payment_Methods extends Admin_Controller {
 		
 		if ($id and !$this->input->post('btn_submit'))
 		{
-			$this->mdl_payment_methods->prep_form($id);
+			if (!$this->mdl_payment_methods->prep_form($id))
+            {
+                show_404();
+            }
 		}
 		
 		$this->layout->buffer('content', 'payment_methods/form');

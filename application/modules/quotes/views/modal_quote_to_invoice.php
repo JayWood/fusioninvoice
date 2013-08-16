@@ -36,7 +36,7 @@
 	
 </script>
 
-<div id="modal_quote_to_invoice" class="modal hide fade">
+<div id="modal_quote_to_invoice" class="modal hide">
 	<form class="form-horizontal">
 		<div class="modal-header">
 			<a data-dismiss="modal" class="close">x</a>

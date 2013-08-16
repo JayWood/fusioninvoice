@@ -62,7 +62,7 @@
         <div class="control-group">
             <label class="control-label"><?php echo lang('subject'); ?>: </label>
             <div class="controls">
-                <input type="text" name="subject" id="subject" value="Invoice #<?php echo $invoice->invoice_number; ?>">
+                <input type="text" name="subject" id="subject" value="<?php echo lang('invoice'); ?> #<?php echo $invoice->invoice_number; ?>">
             </div>
         </div>
 

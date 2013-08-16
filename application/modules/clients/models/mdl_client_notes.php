@@ -11,8 +11,8 @@ if (!defined('BASEPATH'))
  * @package		FusionInvoice
  * @author		Jesse Terry
  * @copyright	Copyright (c) 2012 - 2013, Jesse Terry
- * @license		http://www.fusioninvoice.com/license.txt
- * @link		http://www.fusioninvoice.
+ * @license		http://www.fusioninvoice.com/support/page/license-agreement
+ * @link		http://www.fusioninvoice.com
  * 
  */
 
@@ -45,9 +45,8 @@ class Mdl_Client_Notes extends Response_Model {
 	public function db_array()
 	{
 		$db_array = parent::db_array();
-
-		$date							 = new DateTime();
-		$db_array['client_note_date']	 = $date->format('Y-m-d');
+        
+        $db_array['client_note_date'] = date('Y-m-d');
 
 		return $db_array;
 	}

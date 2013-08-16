@@ -11,8 +11,8 @@ if (!defined('BASEPATH'))
  * @package		FusionInvoice
  * @author		Jesse Terry
  * @copyright	Copyright (c) 2012 - 2013, Jesse Terry
- * @license		http://www.fusioninvoice.com/license.txt
- * @link		http://www.fusioninvoice.
+ * @license		http://www.fusioninvoice.com/support/page/license-agreement
+ * @link		http://www.fusioninvoice.com
  * 
  */
 
@@ -25,9 +25,12 @@ class Users extends Admin_Controller {
         $this->load->model('mdl_users');
     }
 
-    public function index()
+    public function index($page = 0)
     {
-        $this->layout->set('users', $this->mdl_users->paginate()->result());
+        $this->mdl_users->paginate(site_url('users/index'), $page);
+        $users = $this->mdl_users->result();
+        
+        $this->layout->set('users', $users);
         $this->layout->set('user_types', $this->mdl_users->user_types());
         $this->layout->buffer('content', 'users/index');
         $this->layout->render();
@@ -53,7 +56,10 @@ class Users extends Admin_Controller {
 
         if ($id and !$this->input->post('btn_submit'))
         {
-            $this->mdl_users->prep_form($id);
+            if (!$this->mdl_users->prep_form($id))
+            {
+                show_404();
+            }
 
             $this->load->model('custom_fields/mdl_user_custom');
 
@@ -73,9 +79,12 @@ class Users extends Admin_Controller {
         }
         elseif ($this->input->post('btn_submit'))
         {
-            foreach ($this->input->post('custom') as $key=>$val)
+            if ($this->input->post('custom'))
             {
-                $this->mdl_users->set_form_value('custom[' . $key . ']', $val);
+                foreach ($this->input->post('custom') as $key => $val)
+                {
+                    $this->mdl_users->set_form_value('custom[' . $key . ']', $val);
+                }
             }
         }
 
@@ -85,9 +94,9 @@ class Users extends Admin_Controller {
 
         $this->layout->set(
             array(
-                'id'            => $id,
-                'user_types'    => $this->mdl_users->user_types(),
-                'user_clients'  => $this->mdl_user_clients->where('fi_user_clients.user_id', $id)->get()->result(),
+                'id' => $id,
+                'user_types' => $this->mdl_users->user_types(),
+                'user_clients' => $this->mdl_user_clients->where('fi_user_clients.user_id', $id)->get()->result(),
                 'custom_fields' => $this->mdl_custom_fields->by_table('fi_user_custom')->get()->result()
             )
         );
@@ -117,7 +126,10 @@ class Users extends Admin_Controller {
 
     public function delete($id)
     {
-        $this->mdl_users->delete($id);
+        if ($id <> 1)
+        {
+            $this->mdl_users->delete($id);
+        }
         redirect('users');
     }
 

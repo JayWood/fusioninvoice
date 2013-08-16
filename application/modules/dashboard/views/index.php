@@ -68,16 +68,18 @@
 								<th><?php echo lang('due_date'); ?></th>
 								<th><?php echo lang('invoice'); ?></th>
 								<th><?php echo lang('client'); ?></th>
-								<th><?php echo lang('amount'); ?></th>
+								<th style="text-align: right;"><?php echo lang('balance'); ?></th>
+                                <th style="text-align: center;"><?php echo lang('pdf'); ?></th>
 							</tr>
 						</thead>
 						<tbody>
 							<?php foreach ($open_invoices as $open_invoice) { ?>
 							<tr>
-								<td><?php echo date_from_mysql($open_invoice->invoice_date_created); ?></td>
+								<td><?php echo date_from_mysql($open_invoice->invoice_date_due); ?></td>
 								<td><?php echo anchor('invoices/view/' . $open_invoice->invoice_id, $open_invoice->invoice_number); ?></td>
 								<td><?php echo $open_invoice->client_name; ?></td>
-								<td><?php echo format_currency($open_invoice->invoice_total); ?></td>
+								<td style="text-align: right;"><?php echo format_currency($open_invoice->invoice_balance); ?></td>
+                                <td style="text-align: center;"><a href="<?php echo site_url('invoices/generate_pdf/' . $open_invoice->invoice_id); ?>" title="<?php echo lang('download_pdf'); ?>"><i class="icon-print"></i></a></td>
 							</tr>
 							<?php } ?>
 						</tbody>
@@ -97,16 +99,18 @@
 								<th><?php echo lang('due_date'); ?></th>
 								<th><?php echo lang('invoice'); ?></th>
 								<th><?php echo lang('client'); ?></th>
-								<th><?php echo lang('amount'); ?></th>
+								<th style="text-align: right;"><?php echo lang('balance'); ?></th>
+                                <th style="text-align: center;"><?php echo lang('pdf'); ?></th>
 							</tr>
 						</thead>
 						<tbody>
 							<?php foreach ($overdue_invoices as $overdue_invoice) { ?>
 							<tr>
-								<td><?php echo date_from_mysql($overdue_invoice->invoice_date_created); ?></td>
+								<td><?php echo date_from_mysql($overdue_invoice->invoice_date_due); ?></td>
 								<td><?php echo anchor('invoices/view/' . $overdue_invoice->invoice_id, $overdue_invoice->invoice_number); ?></td>
 								<td><?php echo $overdue_invoice->client_name; ?></td>
-								<td><?php echo format_currency($overdue_invoice->invoice_total); ?></td>
+								<td style="text-align: right;"><?php echo format_currency($overdue_invoice->invoice_balance); ?></td>
+                                <td style="text-align: center;"><a href="<?php echo site_url('invoices/generate_pdf/' . $overdue_invoice->invoice_id); ?>" title="<?php echo lang('download_pdf'); ?>"><i class="icon-print"></i></a></td>
 							</tr>
 							<?php } ?>
 						</tbody>
@@ -157,7 +161,7 @@
 								<th><?php echo lang('date'); ?></th>
 								<th><?php echo lang('invoice'); ?></th>
 								<th><?php echo lang('client'); ?></th>
-								<th><?php echo lang('amount'); ?></th>
+								<th style="text-align: right;"><?php echo lang('amount'); ?></th>
 							</tr>
 						</thead>
 						<tbody>
@@ -166,7 +170,7 @@
 								<td><?php echo date_from_mysql($recent_payment->payment_date); ?></td>
 								<td><?php echo anchor('invoices/view/' . $recent_payment->invoice_id, $recent_payment->invoice_number); ?></td>
 								<td><?php echo $recent_payment->client_name; ?></td>
-								<td><?php echo format_currency($recent_payment->payment_amount); ?></td>
+								<td style="text-align: right;"><?php echo format_currency($recent_payment->payment_amount); ?></td>
 							</tr>
 							<?php } ?>
 						</tbody>

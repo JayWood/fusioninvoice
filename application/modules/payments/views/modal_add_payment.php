@@ -1,7 +1,12 @@
 <script type="text/javascript">
 	$(function()
 	{
-		$('#btn_modal_payment_submit').click(function()
+            $('#enter-payment').modal('show');
+		$('#enter-payment').on('shown', function() {
+           $('#payment_amount').focus(); 
+        });
+        
+        $('#btn_modal_payment_submit').click(function()
 		{
 			$.post("<?php echo site_url('payments/ajax/add'); ?>", { 
 				invoice_id: $('#invoice_id').val(),
@@ -15,7 +20,7 @@
 				if (response.success == '1')
 				{
 					// The validation was successful and payment was added
-					window.location = "<?php echo site_url('invoices/view/' . $invoice_id); ?>";
+					window.location = "<?php echo $_SERVER['HTTP_REFERER']; ?>";
 				}
 				else
 				{
@@ -31,7 +36,7 @@
 	});
 </script>
 
-<div id="enter-payment" class="modal hide fade">
+<div id="enter-payment" class="modal hide">
 	<div class="modal-header">
 		<a data-dismiss="modal" class="close">×</a>
 		<h3><?php echo lang('enter_payment'); ?></h3>

@@ -3,14 +3,13 @@
 	{
 		$('#modal_delete_quote_confirm').click(function()
 		{
-			// alert($(this).data('quote-id'));
 			quote_id = $(this).data('quote-id');
 			window.location = '<?php echo site_url('quotes/delete'); ?>/' + quote_id;
 		});
 	});
 </script>
 
-<div id="delete-quote" class="modal hide fade">
+<div id="delete-quote" class="modal hide">
 	<div class="modal-header">
 		<a data-dismiss="modal" class="close">×</a>
 		<h3><?php echo lang('delete_quote'); ?></h3>

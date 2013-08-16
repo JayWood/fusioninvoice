@@ -32,362 +32,382 @@
  */
 class MY_Model extends CI_Model {
 
-	public $table;
-	public $primary_key;
-	public $default_limit	 = 15;
-	public $page_links;
-	public $query;
-	public $form_values	 = array();
-	protected $default_validation_rules	 = 'validation_rules';
-	protected $validation_rules;
-	public $validation_errors;
-	public $total_rows;
-	public $date_created_field;
-	public $date_modified_field;
-	public $native_methods				 = array(
-		'select', 'select_max', 'select_min', 'select_avg', 'select_sum', 'join',
-		'where', 'or_where', 'where_in', 'or_where_in', 'where_not_in', 'or_where_not_in',
-		'like', 'or_like', 'not_like', 'or_not_like', 'group_by', 'distinct', 'having',
-		'or_having', 'order_by', 'limit'
-	);
-	public $user_funcs = array();
-	public $total_pages = 0;
-	public $current_page;
-	public $next_page;
-	public $previous_page;
-	public $offset;
-	public $next_offset;
-	public $previous_offset;
-	public $last_offset;
+    public $table;
+    public $primary_key;
+    public $default_limit            = 15;
+    public $page_links;
+    public $query;
+    public $form_values              = array();
+    protected $default_validation_rules = 'validation_rules';
+    protected $validation_rules;
+    public $validation_errors;
+    public $total_rows;
+    public $date_created_field;
+    public $date_modified_field;
+    public $native_methods           = array(
+        'select', 'select_max', 'select_min', 'select_avg', 'select_sum', 'join',
+        'where', 'or_where', 'where_in', 'or_where_in', 'where_not_in', 'or_where_not_in',
+        'like', 'or_like', 'not_like', 'or_not_like', 'group_by', 'distinct', 'having',
+        'or_having', 'order_by', 'limit'
+    );
+    public $total_pages              = 0;
+    public $current_page;
+    public $next_page;
+    public $previous_page;
+    public $offset;
+    public $next_offset;
+    public $previous_offset;
+    public $last_offset;
+    public $id;
+    public $filter                   = array();
 
-	public function __call($name, $arguments)
-	{
-		call_user_func_array(array($this->db, $name), $arguments);
-		$this->user_funcs[] = array($name, $arguments);
-		return $this;
-	}
+    public function __call($name, $arguments)
+    {
+        if (substr($name, 0, 7) == 'filter_')
+        {
+            $this->filter[] = array(substr($name, 7), $arguments);
+        }
+        else
+        {
+            call_user_func_array(array($this->db, $name), $arguments);
+        }
+        return $this;
+    }
 
-	/**
-	 * Sets CI query object and automatically creates active record query
-	 * based on methods in child model.
-	 * $this->model_name->get()
-	 */
-	public function get($include_defaults = true)
-	{
-		if ($include_defaults)
-		{
-			$this->set_defaults();
-		}
+    /**
+     * Sets CI query object and automatically creates active record query
+     * based on methods in child model.
+     * $this->model_name->get()
+     */
+    public function get($include_defaults = true)
+    {
+        if ($include_defaults)
+        {
+            $this->set_defaults();
+        }
 
-		$this->query = $this->db->get($this->table);
+        $this->run_filters();
 
-		// Reset to empty
-		$this->user_funcs = array();
+        $this->query = $this->db->get($this->table);
 
-		return $this;
-	}
+        $this->filter = array();
 
-	/**
-	 * Query builder which listens to methods in child model.
-	 * @param type $exclude 
-	 */
-	private function set_defaults($exclude = array())
-	{
-		$native_methods = $this->native_methods;
+        return $this;
+    }
 
-		foreach ($exclude as $unset_method)
-		{
-			unset($native_methods[array_search($unset_method, $native_methods)]);
-		}
+    private function run_filters()
+    {
+        foreach ($this->filter as $filter)
+        {
+            call_user_func_array(array($this->db, $filter[0]), $filter[1]);
+        }
 
-		foreach ($native_methods as $native_method)
-		{
-			$native_method = 'default_' . $native_method;
+        /**
+         * Clear the filter array since this should only be run once per model
+         * execution
+         */
+        $this->filter = array();
+    }
 
-			if (method_exists($this, $native_method))
-			{
-				$this->$native_method();
-			}
-		}
-	}
+    /**
+     * Query builder which listens to methods in child model.
+     * @param type $exclude 
+     */
+    private function set_defaults($exclude = array())
+    {
+        $native_methods = $this->native_methods;
 
-	/**
-	 * Call when paginating results.
-	 * $this->model_name->paginate()
-	 */
-	public function paginate($offset = NULL)
-	{
-		$uri_segment	 = '';
-		$this->offset	 = ($offset) ? $offset : 0;
-		$per_page		 = $this->default_limit;
+        foreach ($exclude as $unset_method)
+        {
+            unset($native_methods[array_search($unset_method, $native_methods)]);
+        }
 
-		$this->load->helper('url');
-		$this->load->library('pagination');
+        foreach ($native_methods as $native_method)
+        {
+            $native_method = 'default_' . $native_method;
 
-		$this->set_defaults();
+            if (method_exists($this, $native_method))
+            {
+                $this->$native_method();
+            }
+        }
+    }
 
-		$this->total_rows = $this->db->get($this->table)->num_rows();
+    /**
+     * Call when paginating results.
+     * $this->model_name->paginate()
+     */
+    public function paginate($base_url, $offset = 0, $uri_segment = 3)
+    {
+        $this->load->helper('url');
+        $this->load->library('pagination');
 
-		$this->total_pages = ceil($this->total_rows / $per_page);
-		
-		$this->last_offset = ($this->total_pages * $per_page) - $per_page;
+        $this->offset = $offset;
+        $per_page     = $this->default_limit;
 
-		$uri_segments = $this->uri->segment_array();
+        $this->set_defaults();
+        $this->run_filters();
 
-		// See if the offset can be found in the URL string
-		foreach ($uri_segments as $key => $segment)
-		{
-			if ($segment == 'page')
-			{
-				$uri_segment = $key + 1;
+        $this->db->limit($per_page, $this->offset);
+        $this->query = $this->db->get($this->table);
 
-				if (isset($uri_segments[$uri_segment]))
-				{
-					$this->offset = $uri_segments[$uri_segment];
-				}
+        $this->total_rows      = $this->db->query("SELECT FOUND_ROWS() AS num_rows")->row()->num_rows;
+        $this->total_pages     = ceil($this->total_rows / $per_page);
+        $this->previous_offset = $this->offset - $per_page;
+        $this->next_offset     = $this->offset + $per_page;
 
-				unset($uri_segments[$key], $uri_segments[$key + 1]);
+        $config = array(
+            'base_url'   => $base_url,
+            'total_rows' => $this->total_rows,
+            'per_page'   => $per_page
+        );
 
-				$base_url = site_url(implode('/', $uri_segments) . '/page/');
-			}
-		}
+        $this->last_offset = ($this->total_pages * $per_page) - $per_page;
 
-		$this->current_page = ($this->offset / $per_page) + 1;
+        if ($this->config->item('pagination_style'))
+        {
+            $config = array_merge($config, $this->config->item('pagination_style'));
+        }
 
-		if ($this->current_page > 1)
-		{
-			$this->previous_page	 = $this->current_page - 1;
-			$this->previous_offset	 = $this->offset - $per_page;
-		}
+        $this->pagination->initialize($config);
 
-		if ($this->current_page < $this->total_pages)
-		{
-			$this->next_page	 = $this->current_page + 1;
-			$this->next_offset	 = $this->offset + $per_page;
-		}
+        $this->page_links = $this->pagination->create_links();
+    }
 
-		if (!$uri_segment)
-		{
-			$base_url = site_url($this->uri->uri_string() . '/page/');
-		}
+    /**
+     * Retrieves a single record based on primary key value.
+     */
+    public function get_by_id($id)
+    {
+        return $this->where($this->primary_key, $id)->get()->row();
+    }
 
-		$config = array(
-			'base_url'		 => $base_url,
-			'uri_segment'	 => $uri_segment,
-			'total_rows'	 => $this->total_rows,
-			'per_page'		 => $per_page
-		);
+    public function save($id = NULL, $db_array = NULL)
+    {
+        if (!$db_array)
+        {
+            $db_array = $this->db_array();
+        }
 
-		if ($this->config->item('pagination_style'))
-		{
-			$config = array_merge($config, $this->config->item('pagination_style'));
-		}
+        $datetime = date('Y-m-d H:i:s');
 
-		$this->pagination->initialize($config);
+        if (!$id)
+        {
+            if ($this->date_created_field)
+            {
+                if (is_array($db_array))
+                {
+                    $db_array[$this->date_created_field] = $datetime;
 
-		$this->page_links = $this->pagination->create_links();
+                    if ($this->date_modified_field)
+                    {
+                        $db_array[$this->date_modified_field] = $datetime;
+                    }
+                }
+                else
+                {
+                    $db_array->{$this->date_created_field} = $datetime;
 
-		// Done with pagination, now on to the paged results
-		$this->set_defaults();
+                    if ($this->date_modified_field)
+                    {
+                        $db_array->{$this->date_modified_field} = $datetime;
+                    }
+                }
+            }
+            elseif ($this->date_modified_field)
+            {
+                if (is_array($db_array))
+                {
+                    $db_array[$this->date_modified_field] = $datetime;
+                }
+                else
+                {
+                    $db_array->{$this->date_modified_field} = $datetime;
+                }
+            }
 
-		foreach ($this->user_funcs as $func)
-		{
-			call_user_func_array(array($this->db, $func[0]), $func[1]);
-		}
+            $this->db->insert($this->table, $db_array);
 
-		$this->db->limit($per_page, $this->offset);
+            return $this->db->insert_id();
+        }
+        else
+        {
+            if ($this->date_modified_field)
+            {
+                if (is_array($db_array))
+                {
+                    $db_array[$this->date_modified_field] = $datetime;
+                }
+                else
+                {
+                    $db_array->{$this->date_modified_field} = $datetime;
+                }
+            }
 
-		$this->query = $this->db->get($this->table);
+            $this->db->where($this->primary_key, $id);
+            $this->db->update($this->table, $db_array);
 
-		// Reset to empty
-		$this->user_funcs = array();
+            return $id;
+        }
+    }
 
-		return $this;
-	}
+    /**
+     * Returns an array based on $_POST input matching the ruleset used to
+     * validate the form submission.
+     */
+    public function db_array()
+    {
+        $db_array = array();
 
-	/**
-	 * Retrieves a single record based on primary key value.
-	 */
-	public function get_by_id($id)
-	{
-		return $this->where($this->primary_key, $id)->get()->row();
-	}
+        $validation_rules = $this->{$this->validation_rules}();
 
-	public function save($id = NULL, $db_array = NULL)
-	{
-		if (!$db_array)
-		{
-			$db_array = $this->db_array();
-		}
+        foreach ($this->input->post() as $key => $value)
+        {
+            if (array_key_exists($key, $validation_rules))
+            {
+                $db_array[$key] = $value;
+            }
+        }
 
-		if (!$id)
-		{
-			if ($this->date_created_field)
-			{
-				$db_array[$this->date_created_field] = date('Y-m-d H:i:s');
-			}
+        return $db_array;
+    }
 
-			$this->db->insert($this->table, $db_array);
+    /**
+     * Deletes a record based on primary key value.
+     * $this->model_name->delete(5);
+     */
+    public function delete($id)
+    {
+        $this->db->where($this->primary_key, $id);
+        $this->db->delete($this->table);
+    }
 
-			return $this->db->insert_id();
-		}
-		else
-		{
-			if ($this->date_modified_field)
-			{
-				$db_array[$this->date_modified_field] = date('Y-m-d H:i:s');
-			}
+    /**
+     * Returns the CI query result object.
+     * $this->model_name->get()->result();
+     */
+    public function result()
+    {
+        return $this->query->result();
+    }
 
-			$this->db->where($this->primary_key, $id);
-			$this->db->update($this->table, $db_array);
+    /**
+     * Returns the CI query row object.
+     * $this->model_name->get()->row();
+     */
+    public function row()
+    {
+        return $this->query->row();
+    }
 
-			return $id;
-		}
-	}
+    /**
+     * Returns CI query result array.
+     * $this->model_name->get()->result_array();
+     */
+    public function result_array()
+    {
+        return $this->query->result_array();
+    }
 
-	/**
-	 * Returns an array based on $_POST input matching the ruleset used to
-	 * validate the form submission.
-	 */
-	public function db_array()
-	{
-		$db_array = array();
+    /**
+     * Returns CI query row array.
+     * $this->model_name->get()->row_array();
+     */
+    public function row_array()
+    {
+        return $this->query->row_array();
+    }
 
-		$validation_rules = $this->{$this->validation_rules}();
+    /**
+     * Returns CI query num_rows().
+     * $this->model_name->get()->num_rows();
+     */
+    public function num_rows()
+    {
+        return $this->query->num_rows();
+    }
 
-		foreach ($this->input->post() as $key => $value)
-		{
-			if (array_key_exists($key, $validation_rules))
-			{
-				$db_array[$key] = $value;
-			}
-		}
+    /**
+     * Used to retrieve record by ID and populate $this->form_values.
+     * @param int $id 
+     * @return boolean
+     */
+    public function prep_form($id = NULL)
+    {
+        if (!$_POST and ($id))
+        {
+            $row = $this->get_by_id($id);
 
-		return $db_array;
-	}
+            if ($row)
+            {
+                foreach ($row as $key => $value)
+                {
+                    $this->form_values[$key] = $value;
+                }
+                return TRUE;
+            }
+            return FALSE;
+        }
+        elseif (!$id)
+        {
+            return TRUE;
+        }
+    }
 
-	/**
-	 * Deletes a record based on primary key value.
-	 * $this->model_name->delete(5);
-	 */
-	public function delete($id)
-	{
-		$this->db->where($this->primary_key, $id);
-		$this->db->delete($this->table);
-	}
+    /**
+     * Performs validation on submitted form. By default, looks for method in
+     * child model called validation_rules, but can be forced to run validation
+     * on any method in child model which returns array of validation rules.
+     * @param string $validation_rules
+     * @return boolean
+     */
+    public function run_validation($validation_rules = NULL)
+    {
+        if (!$validation_rules)
+        {
+            $validation_rules = $this->default_validation_rules;
+        }
 
-	/**
-	 * Returns the CI query result object.
-	 * $this->model_name->get()->result();
-	 */
-	public function result()
-	{
-		return $this->query->result();
-	}
+        foreach (array_keys($_POST) as $key)
+        {
+            $this->form_values[$key] = $this->input->post($key);
+        }
 
-	/**
-	 * Returns the CI query row object.
-	 * $this->model_name->get()->row();
-	 */
-	public function row()
-	{
-		return $this->query->row();
-	}
+        if (method_exists($this, $validation_rules))
+        {
+            $this->validation_rules = $validation_rules;
 
-	/**
-	 * Returns CI query result array.
-	 * $this->model_name->get()->result_array();
-	 */
-	public function result_array()
-	{
-		return $this->query->result_array();
-	}
+            $this->load->library('form_validation');
 
-	/**
-	 * Returns CI query row array.
-	 * $this->model_name->get()->row_array();
-	 */
-	public function row_array()
-	{
-		return $this->query->row_array();
-	}
+            $this->form_validation->set_rules($this->$validation_rules());
 
-	/**
-	 * Returns CI query num_rows().
-	 * $this->model_name->get()->num_rows();
-	 */
-	public function num_rows()
-	{
-		return $this->query->num_rows();
-	}
+            $run = $this->form_validation->run();
 
-	/**
-	 * Used to retrieve record by ID and populate $this->form_values.
-	 * @param int $id 
-	 */
-	public function prep_form($id = NULL)
-	{
-		if (!$_POST and ($id))
-		{
-			$this->db->where($this->primary_key, $id);
-			$row = $this->db->get($this->table)->row();
+            $this->validation_errors = validation_errors();
 
-			foreach ($row as $key => $value)
-			{
-				$this->form_values[$key] = $value;
-			}
-		}
-	}
+            return $run;
+        }
+    }
 
-	/**
-	 * Performs validation on submitted form. By default, looks for method in
-	 * child model called validation_rules, but can be forced to run validation
-	 * on any method in child model which returns array of validation rules.
-	 * @param string $validation_rules
-	 * @return boolean
-	 */
-	public function run_validation($validation_rules = NULL)
-	{
-		if (!$validation_rules)
-		{
-			$validation_rules = $this->default_validation_rules;
-		}
+    /**
+     * Returns the assigned form value to a form input element.
+     * @param type $key
+     * @return type 
+     */
+    public function form_value($key)
+    {
+        return (isset($this->form_values[$key])) ? $this->form_values[$key] : '';
+    }
 
-		foreach (array_keys($_POST) as $key)
-		{
-			$this->form_values[$key] = $this->input->post($key);
-		}
+    public function set_form_value($key, $value)
+    {
+        $this->form_values[$key] = $value;
+    }
 
-		if (method_exists($this, $validation_rules))
-		{
-			$this->validation_rules = $validation_rules;
-
-			$this->load->library('form_validation');
-
-			$this->form_validation->set_rules($this->$validation_rules());
-
-			$run = $this->form_validation->run();
-
-			$this->validation_errors = validation_errors();
-
-			return $run;
-		}
-	}
-
-	/**
-	 * Returns the assigned form value to a form input element.
-	 * @param type $key
-	 * @return type 
-	 */
-	public function form_value($key)
-	{
-		return (isset($this->form_values[$key])) ? $this->form_values[$key] : '';
-	}
-
-	public function set_form_value($key, $value)
-	{
-		$this->form_values[$key] = $value;
-	}
+    public function set_id($id)
+    {
+        $this->id = $id;
+    }
 
 }
 

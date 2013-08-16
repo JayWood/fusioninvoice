@@ -1,4 +1,4 @@
-<form method="post" class="form-horizontal">
+<form method="post" class="form-horizontal" enctype="multipart/form-data">
 
 	<div class="tabbable tabs-below">
 

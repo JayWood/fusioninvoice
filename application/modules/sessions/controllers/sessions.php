@@ -11,8 +11,8 @@ if (!defined('BASEPATH'))
  * @package		FusionInvoice
  * @author		Jesse Terry
  * @copyright	Copyright (c) 2012 - 2013, Jesse Terry
- * @license		http://www.fusioninvoice.com/license.txt
- * @link		http://www.fusioninvoice.
+ * @license		http://www.fusioninvoice.com/support/page/license-agreement
+ * @link		http://www.fusioninvoice.com
  * 
  */
 
@@ -39,8 +39,12 @@ class Sessions extends Base_Controller {
                 }
             }
         }
+        
+        $data = array(
+            'login_logo' => $this->mdl_settings->setting('login_logo')
+        );
 
-        $this->load->view('session_login');
+        $this->load->view('session_login', $data);
     }
 
     public function logout()

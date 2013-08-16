@@ -11,14 +11,20 @@ if (!defined('BASEPATH'))
  * @package		FusionInvoice
  * @author		Jesse Terry
  * @copyright	Copyright (c) 2012 - 2013, Jesse Terry
- * @license		http://www.fusioninvoice.com/license.txt
- * @link		http://www.fusioninvoice.
+ * @license		http://www.fusioninvoice.com/support/page/license-agreement
+ * @link		http://www.fusioninvoice.com
  * 
  */
 
-function invoice_logo($invoice)
+function invoice_logo()
 {
-
+    $CI =& get_instance();
+    
+    if ($CI->mdl_settings->setting('invoice_logo'))
+    {
+        return '<img src="' . base_url() . 'uploads/' . $CI->mdl_settings->setting('invoice_logo') . '">';
+    }
+    return '';
 }
 
 ?>

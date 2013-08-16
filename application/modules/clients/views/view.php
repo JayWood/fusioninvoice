@@ -1,22 +1,5 @@
 <script type="text/javascript">
 	$(function() {
-
-		$('#client_create_invoice').click(function()
-		{
-			$('#modal-placeholder').load("<?php echo site_url('invoices/ajax/modal_create_invoice'); ?>",
-			{
-				client_name: $(this).data('client-name')
-			});
-		});
-
-		$('#client_create_quote').click(function()
-		{
-			$('#modal-placeholder').load("<?php echo site_url('quotes/ajax/modal_create_quote'); ?>",
-			{
-				client_name: $(this).data('client-name')
-			});
-		});
-
 		$('#save_client_note').click(function()
 		{
 			$.post("<?php echo site_url('clients/ajax/save_client_note'); ?>",
@@ -54,8 +37,8 @@
 	<h1><?php echo $client->client_name; ?></h1>
 
 	<div class="pull-right">
-		<a href="#" id="client_create_quote" data-client-name="<?php echo $client->client_name; ?>" class="btn"><i class="icon-plus-sign"></i> <?php echo lang('create_quote'); ?></a>
-		<a href="#" id="client_create_invoice" data-client-name="<?php echo $client->client_name; ?>" class="btn"><i class="icon-plus"></i> <?php echo lang('create_invoice'); ?></a>
+		<a href="#" class="btn client-create-quote" data-client-name="<?php echo $client->client_name; ?>"><i class="icon-plus-sign"></i> <?php echo lang('create_quote'); ?></a>
+		<a href="#" class="btn client-create-invoice" data-client-name="<?php echo $client->client_name; ?>"><i class="icon-plus"></i> <?php echo lang('create_invoice'); ?></a>
 		<a href="<?php echo site_url('clients/form/' . $client->client_id); ?>" class="btn"><i class="icon-pencil"></i> <?php echo lang('edit'); ?></a>
 		<a class="btn btn-danger" href="<?php echo site_url('clients/delete/' . $client->client_id); ?>" onclick="return confirm('<?php echo lang('delete_client_warning'); ?>');"><i class="icon-remove"></i> <?php echo lang('delete'); ?></a>
 	</div>
@@ -88,9 +71,9 @@
 					</div>
 
 					<div class="pull-right" style="text-align: right;">
-						<span><strong>Total Billed:</strong> <?php echo format_currency($client->client_invoice_total); ?></span><br>
-						<span><strong>Total Paid:</strong> <?php echo format_currency($client->client_invoice_paid); ?></span><br>
-						<span><strong>Total Balance:</strong> <?php echo format_currency($client->client_invoice_balance); ?></span>
+						<span><strong><?php echo lang('total_billed'); ?>:</strong> <?php echo format_currency($client->client_invoice_total); ?></span><br>
+						<span><strong><?php echo lang('total_paid'); ?>:</strong> <?php echo format_currency($client->client_invoice_paid); ?></span><br>
+						<span><strong><?php echo lang('total_balance'); ?>:</strong> <?php echo format_currency($client->client_invoice_balance); ?></span>
 					</div>
 
 				</div>
@@ -98,7 +81,7 @@
 				<dl>
 					<dt><span><?php echo lang('contact_information'); ?></span></dt>
 					<?php if ($client->client_email) { ?>
-					<dd><span><?php echo lang('email'); ?>:</span> <?php echo auto_link($client->client_email); ?></dd>
+					<dd><span><?php echo lang('email'); ?>:</span> <?php echo auto_link($client->client_email, 'email'); ?></dd>
 					<?php } ?>
 					<?php if ($client->client_phone) { ?>
 					<dd><span><?php echo lang('phone'); ?>:</span> <?php echo $client->client_phone; ?></dd>
@@ -110,11 +93,11 @@
 					<dd><span><?php echo lang('fax'); ?>:</span> <?php echo $client->client_fax; ?></dd>
 					<?php } ?>
 					<?php if ($client->client_web) { ?>
-					<dd><span><?php echo lang('web'); ?>:</span> <?php echo $client->client_web; ?></dd>
+					<dd><span><?php echo lang('web'); ?>:</span> <?php echo auto_link($client->client_web,'url', TRUE); ?></dd>
 					<?php } ?>
 				</dl>
                 
-                <dl>
+                <dl class="profile-custom">
                     <dt><span><?php echo lang('custom_fields'); ?></span></dt>
                     <?php foreach ($custom_fields as $custom_field) { ?>
                     <dd><span><?php echo $custom_field->custom_field_label; ?>: </span> <?php echo $client->{$custom_field->custom_field_column}; ?></dd>
@@ -127,11 +110,15 @@
 
 			<div class="notes">
 
+				<div id="notes_list">
+					<?php echo $partial_notes; ?>
+				</div>
+                
 				<form>
 					<input type="hidden" name="client_id" id="client_id" value="<?php echo $client->client_id; ?>">
 					<fieldset>
 
-						<legend><?php echo lang('add_notes'); ?></legend>
+						<legend><?php echo lang('notes'); ?></legend>
 						<div class="control-group">
 							<div class="controls">
 								<textarea id="client_note"></textarea>
@@ -141,11 +128,7 @@
 						<input type="button" id="save_client_note" class="btn btn-primary" value="<?php echo lang('add_notes'); ?>">
 					</fieldset>
 				</form>
-				
-				<div id="notes_list">
-					<?php echo $partial_notes; ?>
-				</div>
-				
+
 			</div>
 		</div>
 

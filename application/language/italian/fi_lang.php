@@ -25,7 +25,7 @@ $lang['cannot_select_specified_database'] = 'Impossibile connettersi al database
 $lang['cc'] = 'CC';
 $lang['change_password'] = 'Cambia password';
 $lang['city'] = 'Città';
-$lang['client_access'] = 'Indirizzo cliente';
+$lang['client_access'] = 'Accesso cliente';
 $lang['client_form'] = 'Cliente';
 $lang['client_name'] = 'Nome cliente';
 $lang['client'] = 'Cliente';
@@ -286,7 +286,7 @@ $lang['zip_code'] = 'CAP';
 /** New or changed for 1.1.9 release **/
 $lang['column'] = 'Colonna';
 $lang['custom_fields'] = 'Campi personalizzati';
-$lang['custom_field_form'] = 'Campo personalizzato'; 
+$lang['custom_field_form'] = 'Campo personalizzato';
 $lang['label'] = 'Etichetta';
 $lang['merchant_currency_code'] = 'Codice valuta';
 $lang['payment'] = 'Pagamento';
@@ -294,5 +294,87 @@ $lang['php_version_fail'] = 'La versione di PHP installata è la %s ma FusionInv
 $lang['php_version_success'] = 'PHP sembra soddisfare i requisiti di installazione';
 $lang['setup_prerequisites_message'] = "Benvenuti in FusionInvoice! Eventuali problemi di seguito elencati devono essere risolti prima di poter continuare con l'installazione.";
 $lang['table'] = 'Tabella';
+
+/** New or changed for 1.2.0 release **/
+$lang['base_invoice'] = 'Fattura base';
+$lang['calendar_day'] = 'Giorno';
+$lang['calendar_days_short'] = array("Dom","Lun","Mar","Mer","Gio","Ven","Sab");
+$lang['calendar_days'] = array("Domenica","Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato");
+$lang['calendar_month'] = 'Mese';
+$lang['calendar_months_short'] = array("Gen","Feb","Mar","Apr","Mag","Giu","Lug","Ago","Set","Ott","Nov","Dic");
+$lang['calendar_months'] = array("Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre");
+$lang['calendar_overview'] = 'Panoramica calendario';
+$lang['calendar_today'] = 'Oggi';
+$lang['calendar_view'] = 'Calendario';
+$lang['calendar_week'] = 'Settimana';
+$lang['create_recurring'] = 'Crea ricorrenza';
+$lang['cron_key'] = 'CRON Key';
+$lang['days'] = 'Giorni';
+$lang['decimal_point'] = 'Separatore decimali';
+$lang['end_date'] = 'Data fine';
+$lang['every'] = 'Ogni';
+$lang['generate'] = 'Genera';
+$lang['list_view'] = 'Lista';
+$lang['month'] = 'Mese';
+$lang['next_date'] = 'Prossima fattura';
+$lang['optional'] = 'Opzionale';
+$lang['quarter'] = 'Tre mesi';
+$lang['recurring'] = 'Ricorrente';
+$lang['recurring_invoices'] = 'Fatture ricorrenti';
+$lang['six_months'] = 'Sei mesi';
+$lang['start_date'] = 'Data inizio';
+$lang['stop'] = 'Ferma';
+$lang['thousands_separator'] = 'Separatore migliaia';
+$lang['total_balance'] = 'Totale Saldo';
+$lang['total_billed'] = 'Totale Fatturato';
+$lang['total_paid'] = 'Totale Pagato';
+$lang['view_recurring_invoices'] = 'Visualizza fatture ricorrenti';
+$lang['year'] = 'Anno';
+$lang['years'] = 'Anni';
+
+/** New or changed for 1.2.1 release **/
+$lang['bill_to'] = 'Fattura a';
+
+/** New or changed for 1.2.2 release **/
+$lang['current_version'] = 'Versione corrente';
+$lang['view_client'] = 'Visualizza cliente';
+
+/** New or changed for 1.2.3 release **/
+$lang['notes'] = 'Note';
+$lang['tax_rate_decimal_places'] = 'Numero decimali imposta';
+
+/** New or changed for 1.2.4 release **/
+$lang['invoice_logo'] = 'Logo fattura';
+$lang['invoice_logo_removed'] = 'Logo fattura rimosso';
+$lang['remove_logo'] = 'Rimuovi logo';
+
+/** New or changed for 1.2.5 release **/
+$lang['company'] = 'Azienda';
+$lang['email_send_method'] = 'Email Sending Method';
+$lang['email_send_method_phpmail'] = 'PHP Mail';
+$lang['email_send_method_sendmail'] = 'Sendmail';
+$lang['email_send_method_smtp'] = 'SMTP';
+$lang['email_successfully_sent'] = 'Email successfully sent';
+$lang['email_template_tags'] = 'Etichette modello email';
+$lang['login_logo'] = 'Login Logo';
+$lang['login_logo_removed'] = 'Login logo removed';
+$lang['online_payment_method'] = 'Online Payment Method';
+
+/** New or changed for 1.2.6 release **/
+$lang['add_quote_tax'] = 'Add Quote Tax';
+$lang['copy_quote'] = 'Copy Quote';
+$lang['filter_quotes'] = 'Filter Quotes';
+$lang['quote_tax'] = 'Quote Tax';
+
+/** New or changed for 1.2.7 release **/
+$lang['download_pdf'] = 'Download PDF';
+$lang['guest_account_denied'] = 'This account is not configured. Please contact the system administrator.';
+$lang['no_records'] = 'There are no records to display';
+$lang['open_quotes'] = 'Open Quotes';
+$lang['pdf'] = 'PDF';
+$lang['welcome'] = 'Welcome';
+
+/** New or changed for 1.2.8 tag **/
+$lang['automatic_email_on_recur'] = 'Automatically email recurring invoices';
 
 ?>

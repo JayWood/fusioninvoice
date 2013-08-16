@@ -1,25 +1,25 @@
 body {
-	font-family: Sans-Serif;
+    font-family: Sans-Serif;
 }
 
 table {
-	width: 100%;
+    width: 100%;
 }
 
 th {
-	text-align: left;
-	border-bottom: black solid thin;
+    text-align: left;
+    border-bottom: #000 thin dotted;
 }
 
 td {
-	border-bottom: black dotted thin;
+    border-bottom: #000 thin dotted;
 }
 
 .amount {
-	text-align: right;
+    text-align: right;
 }
 
 .report_title {
-	text-align: center;
-	font-weight: bold;
+    text-align: center;
+    font-weight: bold;
 }

@@ -11,8 +11,8 @@ if (!defined('BASEPATH'))
  * @package		FusionInvoice
  * @author		Jesse Terry
  * @copyright	Copyright (c) 2012 - 2013, Jesse Terry
- * @license		http://www.fusioninvoice.com/license.txt
- * @link		http://www.fusioninvoice.
+ * @license		http://www.fusioninvoice.com/support/page/license-agreement
+ * @link		http://www.fusioninvoice.com
  * 
  */
 
@@ -35,9 +35,9 @@ class Reports extends Admin_Controller {
 
 			$html = $this->load->view('reports/sales_by_client', $data, TRUE);
 
-			$this->load->helper('dompdf');
+			$this->load->helper('mpdf');
 
-			pdf_create($html, 'Sales_by_Client', TRUE);
+			pdf_create($html, lang('sales_by_client'), TRUE);
 		}
 
 		$this->layout->buffer('content', 'reports/sales_by_client_index')->render();
@@ -53,9 +53,9 @@ class Reports extends Admin_Controller {
 
 			$html = $this->load->view('reports/payment_history', $data, TRUE);
 
-			$this->load->helper('dompdf');
+			$this->load->helper('mpdf');
 
-			pdf_create($html, 'Payment_History', TRUE);
+			pdf_create($html, lang('payment_history'), TRUE);
 		}
 
 		$this->layout->buffer('content', 'reports/payment_history_index')->render();
@@ -71,9 +71,9 @@ class Reports extends Admin_Controller {
 
 			$html = $this->load->view('reports/invoice_aging', $data, TRUE);
 
-			$this->load->helper('dompdf');
+			$this->load->helper('mpdf');
 
-			pdf_create($html, 'Invoice_Aging', TRUE);
+			pdf_create($html, lang('invoice_aging'), TRUE);
 		}
 
 		$this->layout->buffer('content', 'reports/invoice_aging_index')->render();

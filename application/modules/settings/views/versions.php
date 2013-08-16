@@ -21,7 +21,7 @@
 	<tbody>
 		<?php foreach ($versions as $version) { ?>
 		<tr>
-			<td><?php echo date_from_mysql($version->version_date_applied); ?></td>
+			<td><?php echo date_from_timestamp($version->version_date_applied); ?></td>
 			<td><?php echo $version->version_file; ?></td>
 			<td><?php echo $version->version_sql_errors; ?></td>
 		</tr>

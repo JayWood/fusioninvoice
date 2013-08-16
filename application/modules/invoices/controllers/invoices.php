@@ -11,8 +11,8 @@ if (!defined('BASEPATH'))
  * @package		FusionInvoice
  * @author		Jesse Terry
  * @copyright	Copyright (c) 2012 - 2013, Jesse Terry
- * @license		http://www.fusioninvoice.com/license.txt
- * @link		http://www.fusioninvoice.
+ * @license		http://www.fusioninvoice.com/support/page/license-agreement
+ * @link		http://www.fusioninvoice.com
  * 
  */
 
@@ -31,24 +31,28 @@ class Invoices extends Admin_Controller {
         redirect('invoices/status/open');
     }
 
-    public function status($status = 'open')
+    public function status($status = 'open', $page = 0)
     {
         // Determine which group of invoices to load
         switch ($status)
         {
             case 'open':
-                $this->layout->set('invoices', $this->mdl_invoices->is_open()->paginate()->result());
+                $this->mdl_invoices->is_open();
                 break;
             case 'closed':
-                $this->layout->set('invoices', $this->mdl_invoices->is_closed()->paginate()->result());
+                $this->mdl_invoices->is_closed();
                 break;
             case 'overdue':
-                $this->layout->set('invoices', $this->mdl_invoices->is_overdue()->paginate()->result());
+                $this->mdl_invoices->is_overdue();
                 break;
         }
 
+        $this->mdl_invoices->paginate(site_url('invoices/status/' . $status), $page);
+        $invoices = $this->mdl_invoices->result();
+
         $this->layout->set(
             array(
+                'invoices'           => $invoices,
                 'status'             => $status,
                 'filter_display'     => TRUE,
                 'filter_placeholder' => lang('filter_invoices'),
@@ -60,25 +64,29 @@ class Invoices extends Admin_Controller {
         $this->layout->render();
     }
 
-    public function client($client_id, $status = 'open')
+    public function client($client_id, $status = 'open', $page = 0)
     {
         // Determine which group of invoices to load
         switch ($status)
         {
             case 'open':
-                $this->layout->set('invoices', $this->mdl_invoices->by_client($client_id)->has_balance()->paginate()->result());
+                $this->mdl_invoices->by_client($client_id)->is_open();
                 break;
             case 'closed':
-                $this->layout->set('invoices', $this->mdl_invoices->by_client($client_id)->has_no_balance()->paginate()->result());
+                $this->mdl_invoices->by_client($client_id)->is_closed();
                 break;
             case 'overdue':
-                $this->layout->set('invoices', $this->mdl_invoices->by_client($client_id)->is_overdue()->paginate()->result());
+                $this->mdl_invoices->by_client($client_id)->is_overdue();
                 break;
         }
+
+        $this->mdl_invoices->paginate(site_url('invoices/client/' . $client_id . '/' . $status), $page);
+        $invoices = $this->mdl_invoices->result();
 
         $this->layout->set(
             array(
                 'client_id'          => $client_id,
+                'invoices'           => $invoices,
                 'status'             => $status,
                 'filter_display'     => TRUE,
                 'filter_placeholder' => lang('filter_invoices'),
@@ -99,7 +107,7 @@ class Invoices extends Admin_Controller {
         $this->load->model('custom_fields/mdl_custom_fields');
 
         $this->load->module('payments');
-        
+
         $this->load->model('custom_fields/mdl_invoice_custom');
 
         $invoice_custom = $this->mdl_invoice_custom->where('invoice_id', $invoice_id)->get();
@@ -116,15 +124,27 @@ class Invoices extends Admin_Controller {
             }
         }
 
+        $invoice = $this->mdl_invoices->get_by_id($invoice_id);
+
+        if (!$invoice)
+        {
+            show_404();
+        }
+
         $this->layout->set(
             array(
-                'invoice'           => $this->mdl_invoices->get_by_id($invoice_id),
+                'invoice'           => $invoice,
                 'items'             => $this->mdl_items->where('invoice_id', $invoice_id)->get()->result(),
                 'invoice_id'        => $invoice_id,
                 'tax_rates'         => $this->mdl_tax_rates->get()->result(),
                 'invoice_tax_rates' => $this->mdl_invoice_tax_rates->where('invoice_id', $invoice_id)->get()->result(),
                 'payment_methods'   => $this->mdl_payment_methods->get()->result(),
-                'custom_fields'     => $this->mdl_custom_fields->by_table('fi_invoice_custom')->get()->result()
+                'custom_fields'     => $this->mdl_custom_fields->by_table('fi_invoice_custom')->get()->result(),
+                'custom_js_vars'    => array(
+                    'currency_symbol'           => $this->mdl_settings->setting('currency_symbol'),
+                    'currency_symbol_placement' => $this->mdl_settings->setting('currency_symbol_placement'),
+                    'decimal_point'             => $this->mdl_settings->setting('decimal_point')
+                )
             )
         );
 
@@ -134,6 +154,18 @@ class Invoices extends Admin_Controller {
                 array('modal_add_invoice_tax', 'invoices/modal_add_invoice_tax'),
                 array('modal_add_payment', 'payments/modal_add_payment'),
                 array('content', 'invoices/view')
+            )
+        );
+
+        $this->layout->render();
+    }
+
+    public function calendar()
+    {
+        $this->layout->buffer(
+            array(
+                array('calendar', 'calendar/full_calendar'),
+                array('content', 'invoices/calendar')
             )
         );
 
@@ -180,9 +212,9 @@ class Invoices extends Admin_Controller {
 
         $html = $this->load->view('invoice_templates/' . $invoice_template, $data, TRUE);
 
-        $this->load->helper('dompdf');
+        $this->load->helper('mpdf');
 
-        return pdf_create($html, 'Invoice_' . $invoice->invoice_number, $stream);
+        echo pdf_create($html, lang('invoice') . '_' . $invoice->invoice_number, $stream);
     }
 
     public function delete_invoice_tax($invoice_id, $invoice_tax_rate_id)

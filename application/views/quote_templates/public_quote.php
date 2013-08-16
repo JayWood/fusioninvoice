@@ -84,9 +84,9 @@
     <body>
 
         <div id="menu-container">
-            <div class="alert alert-info">
-            <a href="<?php echo site_url('guest/view/generate_quote_pdf/' . $quote_url_key); ?>" class="btn btn-primary"><i class="icon-white icon-print"></i> Open PDF</a> 
-            </div>
+
+            <a href="<?php echo site_url('guest/view/generate_quote_pdf/' . $quote_url_key); ?>" class="btn btn-primary"><i class="icon-white icon-print"></i> <?php echo lang('download_pdf'); ?></a> 
+
             <?php if ($flash_message) { ?>
             <div class="alert flash-message">
                 <?php echo $flash_message; ?>
@@ -100,9 +100,9 @@
                 <table>
                     <tr>
                         <td id="company-name">
+                            <?php echo invoice_logo(); ?>
                             <h2><?php echo $quote->user_name; ?></h2>
-                            <p>
-                                <?php if ($quote->user_address_1) { echo $quote->user_address_1 . '<br>'; } ?>
+                            <p><?php if ($quote->user_address_1) { echo $quote->user_address_1 . '<br>'; } ?>
                                 <?php if ($quote->user_address_2) { echo $quote->user_address_2 . '<br>'; } ?>
                                 <?php if ($quote->user_city) { echo $quote->user_city . ' '; } ?>
                                 <?php if ($quote->user_state) { echo $quote->user_state . ' '; } ?>
@@ -120,14 +120,12 @@
                     <tr>
                         <td>
                             <h2><?php echo $quote->client_name; ?></h2>
-                            <p>
-                                <?php if ($quote->client_address_1) { echo $quote->client_address_1 . '<br>'; } ?>
+                            <p><?php if ($quote->client_address_1) { echo $quote->client_address_1 . '<br>'; } ?>
                                 <?php if ($quote->client_address_2) { echo $quote->client_address_2 . '<br>'; } ?>
                                 <?php if ($quote->client_city) { echo $quote->client_city . ' '; } ?>
                                 <?php if ($quote->client_state) { echo $quote->client_state . ' '; } ?>
                                 <?php if ($quote->client_zip) { echo $quote->client_zip . '<br>'; } ?>
                                 <?php if ($quote->client_phone) { ?><abbr>P:</abbr><?php echo $quote->client_phone; ?><br><?php } ?>
-
                             </p>
                         </td>
                         <td style="width:40%;"></td>
@@ -170,7 +168,26 @@
                                 <td><?php echo $item->item_name; ?></td>
                                 <td><?php echo $item->item_description; ?></td>
                                 <td><?php echo format_currency($item->item_price); ?></td>
-                                <td><?php echo format_currency($item->item_total); ?></td>
+                                <td><?php echo format_currency($item->item_subtotal); ?></td>
+                            </tr>
+                        <?php endforeach ?>
+                        <tr>
+                            <td colspan="3"></td>
+                            <td><?php echo lang('subtotal'); ?>:</td>
+                            <td><?php echo format_currency($quote->quote_item_subtotal); ?></td>
+                        </tr>
+                        <?php if ($quote->quote_item_tax_total > 0) { ?>
+                        <tr>
+                                <td class="no-bottom-border" colspan="3"></td>
+                                <td><?php echo lang('item_tax'); ?></td>
+                                <td><?php echo format_currency($quote->quote_item_tax_total); ?></td>
+                        </tr>
+                        <?php } ?>
+                        <?php foreach ($quote_tax_rates as $quote_tax_rate) : ?>
+                            <tr>    
+                                <td class="no-bottom-border" colspan="3"></td>
+                                <td><?php echo $quote_tax_rate->quote_tax_rate_name . ' ' . $quote_tax_rate->quote_tax_rate_percent; ?>%</td>
+                                <td><?php echo format_currency($quote_tax_rate->quote_tax_rate_amount); ?></td>
                             </tr>
                         <?php endforeach ?>
                         <tr>
@@ -181,6 +198,7 @@
                     </tbody>
                 </table>
                 <div class="seperator"></div>
+                
             </div>
 
         </div>

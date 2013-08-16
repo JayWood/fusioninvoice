@@ -11,8 +11,8 @@ if (!defined('BASEPATH'))
  * @package		FusionInvoice
  * @author		Jesse Terry
  * @copyright	Copyright (c) 2012 - 2013, Jesse Terry
- * @license		http://www.fusioninvoice.com/license.txt
- * @link		http://www.fusioninvoice.
+ * @license		http://www.fusioninvoice.com/support/page/license-agreement
+ * @link		http://www.fusioninvoice.com
  * 
  */
 
@@ -25,12 +25,13 @@ class Mdl_Payments extends Response_Model {
     public function default_select()
     {
         $this->db->select("
-            fi_payment_custom.*,
+            SQL_CALC_FOUND_ROWS fi_payment_custom.*,
             fi_payment_methods.*,
             fi_invoice_amounts.*,
             fi_clients.client_name,
             fi_invoices.invoice_number,
-            fi_payments.*");
+            fi_invoices.invoice_date_created,
+            fi_payments.*", FALSE);
     }
 
     public function default_order_by()
@@ -134,20 +135,26 @@ class Mdl_Payments extends Response_Model {
     public function db_array()
     {
         $db_array = parent::db_array();
-
+        
         $db_array['payment_date'] = date_to_mysql($db_array['payment_date']);
+        $db_array['payment_amount'] = standardize_amount($db_array['payment_amount']);
 
         return $db_array;
     }
 
     public function prep_form($id = NULL)
     {
-        parent::prep_form($id);
+        if (!parent::prep_form($id))
+        {
+            return FALSE;
+        }
 
         if (!$id)
         {
             parent::set_form_value('payment_date', date('Y-m-d'));
         }
+        
+        return TRUE;
     }
 
 }

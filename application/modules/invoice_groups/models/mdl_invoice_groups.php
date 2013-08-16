@@ -11,8 +11,8 @@ if (!defined('BASEPATH'))
  * @package		FusionInvoice
  * @author		Jesse Terry
  * @copyright	Copyright (c) 2012 - 2013, Jesse Terry
- * @license		http://www.fusioninvoice.com/license.txt
- * @link		http://www.fusioninvoice.
+ * @license		http://www.fusioninvoice.com/support/page/license-agreement
+ * @link		http://www.fusioninvoice.com
  * 
  */
 
@@ -20,6 +20,11 @@ class Mdl_Invoice_Groups extends Response_Model {
 
     public $table       = 'fi_invoice_groups';
     public $primary_key = 'fi_invoice_groups.invoice_group_id';
+
+    public function default_select()
+    {
+        $this->db->select('SQL_CALC_FOUND_ROWS *', FALSE);
+    }
 
     public function default_order_by()
     {
@@ -45,7 +50,8 @@ class Mdl_Invoice_Groups extends Response_Model {
             ),
             'invoice_group_left_pad'     => array(
                 'field' => 'invoice_group_left_pad',
-                'label' => lang('left_pad')
+                'label' => lang('left_pad'),
+                'rules' => 'required'
             ),
             'invoice_group_prefix_year'  => array(
                 'field' => 'invoice_group_prefix_year',

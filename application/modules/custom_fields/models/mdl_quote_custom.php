@@ -4,15 +4,15 @@ if (!defined('BASEPATH'))
     exit('No direct script access allowed');
 
 /*
- * Fusionquote
+ * FusionInvoice
  * 
  * A free and open source web based invoicing system
  *
- * @package		Fusionquote
+ * @package		FusionInvoice
  * @author		Jesse Terry
  * @copyright	Copyright (c) 2012 - 2013, Jesse Terry
- * @license		http://www.fusionquote.com/license.txt
- * @link		http://www.fusionquote.
+ * @license		http://www.fusioninvoice.com/support/page/license-agreement
+ * @link		http://www.fusioninvoice.com
  * 
  */
 

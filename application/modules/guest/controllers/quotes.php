@@ -11,8 +11,8 @@ if (!defined('BASEPATH'))
  * @package		FusionInvoice
  * @author		Jesse Terry
  * @copyright	Copyright (c) 2012 - 2013, Jesse Terry
- * @license		http://www.fusioninvoice.com/license.txt
- * @link		http://www.fusioninvoice.
+ * @license		http://www.fusioninvoice.com/support/page/license-agreement
+ * @link		http://www.fusioninvoice.com
  * 
  */
 
@@ -31,23 +31,31 @@ class Quotes extends Guest_Controller {
         redirect('guest/quotes/status/open');
     }
 
-    public function status($status = 'open')
+    public function status($status = 'open', $page = 0)
     {
         // Determine which group of quotes to load
         switch ($status)
         {
             case 'expired':
-                $this->layout->set('quotes', $this->mdl_quotes->is_expired()->where_in('fi_quotes.client_id', $this->user_clients)->paginate()->result());
+                $this->mdl_quotes->is_expired()->where_in('fi_quotes.client_id', $this->user_clients);
                 break;
             case 'invoiced':
-                $this->layout->set('quotes', $this->mdl_quotes->is_invoiced()->where_in('fi_quotes.client_id', $this->user_clients)->paginate()->result());
+                $this->mdl_quotes->is_invoiced()->where_in('fi_quotes.client_id', $this->user_clients);
                 $this->layout->set('show_invoice_column', TRUE);
                 break;
+            case 'open':
+                $this->mdl_quotes->is_open()->where_in('fi_quotes.client_id', $this->user_clients);
+                break;
             default:
-                $this->layout->set('quotes', $this->mdl_quotes->is_open()->where_in('fi_quotes.client_id', $this->user_clients)->paginate()->result());
+                $this->mdl_quotes->where_in('fi_quotes.client_id', $this->user_clients);
                 break;
         }
 
+        $this->mdl_quotes->paginate(site_url('guest/quotes/status/' . $status), $page);
+        $quotes = $this->mdl_quotes->result();
+
+        $this->layout->set('quotes', $quotes);
+        $this->layout->set('status', $status);
         $this->layout->buffer('content', 'guest/quotes_index');
         $this->layout->render('layout_guest');
     }
@@ -55,12 +63,21 @@ class Quotes extends Guest_Controller {
     public function view($quote_id)
     {
         $this->load->model('quotes/mdl_quote_items');
+        $this->load->model('quotes/mdl_quote_tax_rates');
+
+        $quote = $this->mdl_quotes->where('fi_quotes.quote_id', $quote_id)->where_in('fi_quotes.client_id', $this->user_clients)->get()->row();
+
+        if (!$quote)
+        {
+            show_404();
+        }
 
         $this->layout->set(
             array(
-                'quote'    => $this->mdl_quotes->where('fi_quotes.quote_id', $quote_id)->where_in('fi_quotes.client_id', $this->user_clients)->get()->row(),
-                'items'    => $this->mdl_quote_items->where('quote_id', $quote_id)->get()->result(),
-                'quote_id' => $quote_id
+                'quote'           => $quote,
+                'items'           => $this->mdl_quote_items->where('quote_id', $quote_id)->get()->result(),
+                'quote_tax_rates' => $this->mdl_quote_tax_rates->where('quote_id', $quote_id)->get()->result(),
+                'quote_id'        => $quote_id
             )
         );
 
@@ -71,6 +88,7 @@ class Quotes extends Guest_Controller {
     public function generate_pdf($quote_id, $stream = TRUE, $quote_template = NULL)
     {
         $this->load->model('quotes/mdl_quote_items');
+        $this->load->model('quotes/mdl_quote_tax_rates');
 
         $quote = $this->mdl_quotes->get_by_id($quote_id);
 
@@ -80,16 +98,17 @@ class Quotes extends Guest_Controller {
         }
 
         $data = array(
-            'quote'       => $this->mdl_quotes->where('fi_quotes.quote_id', $quote_id)->where_in('fi_quotes.client_id', $this->user_clients)->get()->row(),
-            'items'       => $this->mdl_quote_items->where('quote_id', $quote_id)->get()->result(),
-            'output_type' => 'pdf'
+            'quote'           => $this->mdl_quotes->where('fi_quotes.quote_id', $quote_id)->where_in('fi_quotes.client_id', $this->user_clients)->get()->row(),
+            'quote_tax_rates' => $this->mdl_quote_tax_rates->where('quote_id', $quote_id)->get()->result(),
+            'items'           => $this->mdl_quote_items->where('quote_id', $quote_id)->get()->result(),
+            'output_type'     => 'pdf'
         );
 
         $html = $this->load->view('quote_templates/' . $quote_template, $data, TRUE);
 
-        $this->load->helper('dompdf');
+        $this->load->helper('mpdf');
 
-        return pdf_create($html, 'Quote_' . $quote->quote_number, $stream);
+        return pdf_create($html, lang('quote') . '_' . $quote->quote_number, $stream);
     }
 
 }

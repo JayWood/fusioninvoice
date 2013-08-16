@@ -1,3 +1,9 @@
+<script type="text/javascript">
+$(function() {
+   $('#client_name').focus(); 
+});
+</script>
+
 <form method="post" class="form-horizontal">
 
 	<div class="headerbar">
@@ -27,93 +33,101 @@
             </div>
 
         </fieldset>
+        
+        <div class="row-fluid">
+            
+            <div class="span6">
+                <fieldset>
+                    <legend><?php echo lang('address'); ?></legend>
 
-        <fieldset>
-            <legend><?php echo lang('address'); ?></legend>
+                    <div class="control-group">
+                        <label class="control-label"><?php echo lang('street_address'); ?>: </label>
+                        <div class="controls">
+                            <input type="text" name="client_address_1" id="client_address_1" value="<?php echo $this->mdl_clients->form_value('client_address_1'); ?>">
+                        </div>
+                    </div>
 
-            <div class="control-group">
-                <label class="control-label"><?php echo lang('street_address'); ?>: </label>
-                <div class="controls">
-                    <input type="text" name="client_address_1" id="client_address_1" value="<?php echo $this->mdl_clients->form_value('client_address_1'); ?>">
-                </div>
+                    <div class="control-group">
+                        <label class="control-label"><?php echo lang('street_address_2'); ?>: </label>
+                        <div class="controls">
+                            <input type="text" name="client_address_2" id="client_address_2" value="<?php echo $this->mdl_clients->form_value('client_address_2'); ?>">
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label"><?php echo lang('city'); ?>: </label>
+                        <div class="controls">
+                            <input type="text" name="client_city" id="client_city" value="<?php echo $this->mdl_clients->form_value('client_city'); ?>">
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label"><?php echo lang('state'); ?>: </label>
+                        <div class="controls">
+                            <input type="text" name="client_state" id="client_state" value="<?php echo $this->mdl_clients->form_value('client_state'); ?>">
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label"><?php echo lang('zip_code'); ?>: </label>
+                        <div class="controls">
+                            <input type="text" name="client_zip" id="client_zip" value="<?php echo $this->mdl_clients->form_value('client_zip'); ?>">
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label"><?php echo lang('country'); ?>: </label>
+                        <div class="controls">
+                            <input type="text" name="client_country" id="client_country" value="<?php echo $this->mdl_clients->form_value('client_country'); ?>">
+                        </div>
+                    </div>
+                </fieldset>
             </div>
+            
+            <div class="span6">
+                <fieldset>
 
-            <div class="control-group">
-                <label class="control-label"><?php echo lang('street_address_2'); ?>: </label>
-                <div class="controls">
-                    <input type="text" name="client_address_2" id="client_address_2" value="<?php echo $this->mdl_clients->form_value('client_address_2'); ?>">
-                </div>
+                    <legend><?php echo lang('contact_information'); ?></legend>
+
+                    <div class="control-group">
+                        <label class="control-label"><?php echo lang('phone_number'); ?>: </label>
+                        <div class="controls">
+                            <input type="text" name="client_phone" id="client_phone" value="<?php echo $this->mdl_clients->form_value('client_phone'); ?>">
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label"><?php echo lang('fax_number'); ?>: </label>
+                        <div class="controls">
+                            <input type="text" name="client_fax" id="client_fax" value="<?php echo $this->mdl_clients->form_value('client_fax'); ?>">
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label"><?php echo lang('mobile_number'); ?>: </label>
+                        <div class="controls">
+                            <input type="text" name="client_mobile" id="client_mobile" value="<?php echo $this->mdl_clients->form_value('client_mobile'); ?>">
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label"><?php echo lang('email_address'); ?>: </label>
+                        <div class="controls">
+                            <input type="text" name="client_email" id="client_email" value="<?php echo $this->mdl_clients->form_value('client_email'); ?>">
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label"><?php echo lang('web_address'); ?>: </label>
+                        <div class="controls">
+                            <input type="text" name="client_web" id="client_web" value="<?php echo $this->mdl_clients->form_value('client_web'); ?>">
+                        </div>
+                    </div>
+
+                </fieldset>                
             </div>
-
-            <div class="control-group">
-                <label class="control-label"><?php echo lang('city'); ?>: </label>
-                <div class="controls">
-                    <input type="text" name="client_city" id="client_city" value="<?php echo $this->mdl_clients->form_value('client_city'); ?>">
-                </div>
-            </div>
-
-            <div class="control-group">
-                <label class="control-label"><?php echo lang('state'); ?>: </label>
-                <div class="controls">
-                    <input type="text" name="client_state" id="client_state" value="<?php echo $this->mdl_clients->form_value('client_state'); ?>">
-                </div>
-            </div>
-
-            <div class="control-group">
-                <label class="control-label"><?php echo lang('zip_code'); ?>: </label>
-                <div class="controls">
-                    <input type="text" name="client_zip" id="client_zip" value="<?php echo $this->mdl_clients->form_value('client_zip'); ?>">
-                </div>
-            </div>
-
-            <div class="control-group">
-                <label class="control-label"><?php echo lang('country'); ?>: </label>
-                <div class="controls">
-                    <input type="text" name="client_country" id="client_country" value="<?php echo $this->mdl_clients->form_value('client_country'); ?>">
-                </div>
-            </div>
-        </fieldset>
-
-        <fieldset>
-
-            <legend><?php echo lang('contact_information'); ?></legend>
-
-            <div class="control-group">
-                <label class="control-label"><?php echo lang('phone_number'); ?>: </label>
-                <div class="controls">
-                    <input type="text" name="client_phone" id="client_phone" value="<?php echo $this->mdl_clients->form_value('client_phone'); ?>">
-                </div>
-            </div>
-
-            <div class="control-group">
-                <label class="control-label"><?php echo lang('fax_number'); ?>: </label>
-                <div class="controls">
-                    <input type="text" name="client_fax" id="client_fax" value="<?php echo $this->mdl_clients->form_value('client_fax'); ?>">
-                </div>
-            </div>
-
-            <div class="control-group">
-                <label class="control-label"><?php echo lang('mobile_number'); ?>: </label>
-                <div class="controls">
-                    <input type="text" name="client_mobile" id="client_mobile" value="<?php echo $this->mdl_clients->form_value('client_mobile'); ?>">
-                </div>
-            </div>
-
-            <div class="control-group">
-                <label class="control-label"><?php echo lang('email_address'); ?>: </label>
-                <div class="controls">
-                    <input type="text" name="client_email" id="client_email" value="<?php echo $this->mdl_clients->form_value('client_email'); ?>">
-                </div>
-            </div>
-
-            <div class="control-group">
-                <label class="control-label"><?php echo lang('web_address'); ?>: </label>
-                <div class="controls">
-                    <input type="text" name="client_web" id="client_web" value="<?php echo $this->mdl_clients->form_value('client_web'); ?>">
-                </div>
-            </div>
-
-        </fieldset>
+            
+        </div>
         
         <fieldset>
             

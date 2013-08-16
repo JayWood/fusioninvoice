@@ -11,8 +11,8 @@ if (!defined('BASEPATH'))
  * @package		FusionInvoice
  * @author		Jesse Terry
  * @copyright	Copyright (c) 2012 - 2013, Jesse Terry
- * @license		http://www.fusioninvoice.com/license.txt
- * @link		http://www.fusioninvoice.
+ * @license		http://www.fusioninvoice.com/support/page/license-agreement
+ * @link		http://www.fusioninvoice.com
  * 
  */
 
@@ -23,15 +23,50 @@ class Ajax extends Admin_Controller {
     public function save()
     {
         $this->load->model('quotes/mdl_quote_items');
+        $this->load->model('quotes/mdl_quotes');
 
-        $items = json_decode($this->input->post('items'));
+        $quote_id = $this->input->post('quote_id');
 
-        foreach ($items as $item)
+        $this->mdl_quotes->set_id($quote_id);
+
+        if ($this->mdl_quotes->run_validation('validation_rules_save_quote'))
         {
-            if ($item->item_name)
+            $items = json_decode($this->input->post('items'));
+
+            foreach ($items as $item)
             {
-                $this->mdl_quote_items->save($this->input->post('quote_id'), isset($item->item_id) ? $item->item_id : NULL, $item);
+                if ($item->item_name)
+                {
+                    $item->item_quantity = standardize_amount($item->item_quantity);
+                    $item->item_price    = standardize_amount($item->item_price);
+
+                    $item_id = ($item->item_id) ? : NULL;
+
+                    unset($item->item_id);
+
+                    $this->mdl_quote_items->save($quote_id, $item_id, $item);
+                }
             }
+
+            $db_array = array(
+                'quote_number'       => $this->input->post('quote_number'),
+                'quote_date_created' => date_to_mysql($this->input->post('quote_date_created')),
+                'quote_date_expires' => date_to_mysql($this->input->post('quote_date_expires'))
+            );
+
+            $this->mdl_quotes->save($quote_id, $db_array);
+
+            $response = array(
+                'success' => 1
+            );
+        }
+        else
+        {
+            $this->load->helper('json_error');
+            $response = array(
+                'success'           => 0,
+                'validation_errors' => json_errors()
+            );
         }
 
         if ($this->input->post('custom'))
@@ -45,8 +80,33 @@ class Ajax extends Admin_Controller {
             }
 
             $this->load->model('custom_fields/mdl_quote_custom');
-            $this->mdl_quote_custom->save_custom($this->input->post('quote_id'), $db_array);
+            $this->mdl_quote_custom->save_custom($quote_id, $db_array);
         }
+
+        echo json_encode($response);
+    }
+
+    public function save_quote_tax_rate()
+    {
+        $this->load->model('quotes/mdl_quote_tax_rates');
+
+        if ($this->mdl_quote_tax_rates->run_validation())
+        {
+            $this->mdl_quote_tax_rates->save($this->input->post('quote_id'));
+
+            $response = array(
+                'success' => 1
+            );
+        }
+        else
+        {
+            $response = array(
+                'success'           => 0,
+                'validation_errors' => $this->mdl_quote_tax_rates->validation_errors
+            );
+        }
+
+        echo json_encode($response);
     }
 
     public function create()
@@ -55,7 +115,7 @@ class Ajax extends Admin_Controller {
 
         if ($this->mdl_quotes->run_validation())
         {
-            $quote_id = $this->mdl_quotes->save();
+            $quote_id = $this->mdl_quotes->create();
 
             $response = array(
                 'success'  => 1,
@@ -88,19 +148,66 @@ class Ajax extends Admin_Controller {
         $this->load->module('layout');
 
         $this->load->model('invoice_groups/mdl_invoice_groups');
+        $this->load->model('tax_rates/mdl_tax_rates');
 
         $data = array(
             'invoice_groups' => $this->mdl_invoice_groups->get()->result(),
+            'tax_rates'      => $this->mdl_tax_rates->get()->result(),
             'client_name'    => $this->input->post('client_name')
         );
 
         $this->layout->load_view('quotes/modal_create_quote', $data);
     }
 
-    public function modal_quote_to_invoice($quote_id)
+    public function modal_copy_quote()
     {
         $this->load->module('layout');
 
+        $this->load->model('quotes/mdl_quotes');
+        $this->load->model('invoice_groups/mdl_invoice_groups');
+        $this->load->model('tax_rates/mdl_tax_rates');
+
+        $data = array(
+            'invoice_groups' => $this->mdl_invoice_groups->get()->result(),
+            'tax_rates'      => $this->mdl_tax_rates->get()->result(),
+            'quote_id'       => $this->input->post('quote_id'),
+            'quote'          => $this->mdl_quotes->where('fi_quotes.quote_id', $this->input->post('quote_id'))->get()->row()
+        );
+
+        $this->layout->load_view('quotes/modal_copy_quote', $data);
+    }
+
+    public function copy_quote()
+    {
+        $this->load->model('quotes/mdl_quotes');
+        $this->load->model('quotes/mdl_quote_items');
+        $this->load->model('quotes/mdl_quote_tax_rates');
+
+        if ($this->mdl_quotes->run_validation())
+        {
+            $target_id = $this->mdl_quotes->save();
+            $source_id = $this->input->post('quote_id');
+
+            $this->mdl_quotes->copy_quote($source_id, $target_id);
+
+            $response = array(
+                'success'  => 1,
+                'quote_id' => $target_id
+            );
+        }
+        else
+        {
+            $response = array(
+                'success'           => 0,
+                'validation_errors' => json_errors()
+            );
+        }
+
+        echo json_encode($response);
+    }
+
+    public function modal_quote_to_invoice($quote_id)
+    {
         $this->load->model('invoice_groups/mdl_invoice_groups');
         $this->load->model('quotes/mdl_quotes');
 
@@ -110,15 +217,21 @@ class Ajax extends Admin_Controller {
             'quote'          => $this->mdl_quotes->where('fi_quotes.quote_id', $quote_id)->get()->row()
         );
 
-        $this->layout->load_view('quotes/modal_quote_to_invoice', $data);
+        $this->load->view('quotes/modal_quote_to_invoice', $data);
     }
 
     public function quote_to_invoice()
     {
-        $this->load->model('invoices/mdl_invoices');
-        $this->load->model('invoices/mdl_items');
-        $this->load->model('quotes/mdl_quotes');
-        $this->load->model('quotes/mdl_quote_items');
+        $this->load->model(
+            array(
+                'invoices/mdl_invoices',
+                'invoices/mdl_items',
+                'quotes/mdl_quotes',
+                'quotes/mdl_quote_items',
+                'invoices/mdl_invoice_tax_rates',
+                'quotes/mdl_quote_tax_rates'
+            )
+        );
 
         if ($this->mdl_invoices->run_validation())
         {
@@ -134,7 +247,7 @@ class Ajax extends Admin_Controller {
             {
                 $db_array = array(
                     'invoice_id'       => $invoice_id,
-                    'item_tax_rate_id' => $this->mdl_settings->setting('default_invoice_item_tax_rate'),
+                    'item_tax_rate_id' => $quote_item->item_tax_rate_id,
                     'item_name'        => $quote_item->item_name,
                     'item_description' => $quote_item->item_description,
                     'item_quantity'    => $quote_item->item_quantity,
@@ -143,6 +256,20 @@ class Ajax extends Admin_Controller {
                 );
 
                 $this->mdl_items->save($invoice_id, NULL, $db_array);
+            }
+
+            $quote_tax_rates = $this->mdl_quote_tax_rates->where('quote_id', $this->input->post('quote_id'))->get()->result();
+
+            foreach ($quote_tax_rates as $quote_tax_rate)
+            {
+                $db_array = array(
+                    'invoice_id'              => $invoice_id,
+                    'tax_rate_id'             => $quote_tax_rate->tax_rate_id,
+                    'include_item_tax'        => $quote_tax_rate->include_item_tax,
+                    'invoice_tax_rate_amount' => $quote_tax_rate->quote_tax_rate_amount
+                );
+
+                $this->mdl_invoice_tax_rates->save($invoice_id, NULL, $db_array);
             }
 
             $response = array(

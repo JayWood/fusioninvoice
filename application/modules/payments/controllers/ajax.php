@@ -11,8 +11,8 @@ if (!defined('BASEPATH'))
  * @package		FusionInvoice
  * @author		Jesse Terry
  * @copyright	Copyright (c) 2012 - 2013, Jesse Terry
- * @license		http://www.fusioninvoice.com/license.txt
- * @link		http://www.fusioninvoice.
+ * @license		http://www.fusioninvoice.com/support/page/license-agreement
+ * @link		http://www.fusioninvoice.com
  * 
  */
 
@@ -43,6 +43,20 @@ class Ajax extends Admin_Controller {
 
 		echo json_encode($response);
 	}
+        
+        public function modal_add_payment()
+        {
+            $this->load->module('layout');
+            $this->load->model('payments/mdl_payments');
+            $this->load->model('payment_methods/mdl_payment_methods');
+
+            $data = array(
+                'payment_methods' => $this->mdl_payment_methods->get()->result(),
+                'invoice_id'    => $this->input->post('invoice_id')
+            );
+
+            $this->layout->load_view('payments/modal_add_payment', $data);
+        }
 
 }
 

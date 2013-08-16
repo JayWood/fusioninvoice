@@ -11,8 +11,8 @@ if (!defined('BASEPATH'))
  * @package		FusionInvoice
  * @author		Jesse Terry
  * @copyright	Copyright (c) 2012 - 2013, Jesse Terry
- * @license		http://www.fusioninvoice.com/license.txt
- * @link		http://www.fusioninvoice.
+ * @license		http://www.fusioninvoice.com/support/page/license-agreement
+ * @link		http://www.fusioninvoice.com
  * 
  */
 
@@ -25,9 +25,12 @@ class Email_Templates extends Admin_Controller {
 		$this->load->model('mdl_email_templates');
 	}
 	
-	public function index()
+	public function index($page = 0)
 	{
-		$this->layout->set('email_templates', $this->mdl_email_templates->paginate()->result());
+        $this->mdl_email_templates->paginate(site_url('email_templates/index'), $page);
+        $email_templates = $this->mdl_email_templates->result();
+        
+		$this->layout->set('email_templates', $email_templates);
 		$this->layout->buffer('content', 'email_templates/index');
 		$this->layout->render();
 	}
@@ -47,7 +50,10 @@ class Email_Templates extends Admin_Controller {
 		
 		if ($id and !$this->input->post('btn_submit'))
 		{
-			$this->mdl_email_templates->prep_form($id);
+			if (!$this->mdl_email_templates->prep_form($id))
+            {
+                show_404();
+            }
 		}
 		
 		$this->layout->buffer('content', 'email_templates/form');

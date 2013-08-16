@@ -62,7 +62,7 @@
         <div class="control-group">
             <label class="control-label"><?php echo lang('subject'); ?>: </label>
             <div class="controls">
-                <input type="text" name="subject" id="subject" value="quote #<?php echo $quote->quote_number; ?>">
+                <input type="text" name="subject" id="subject" value="<?php echo lang('quote'); ?> #<?php echo $quote->quote_number; ?>">
             </div>
         </div>
 

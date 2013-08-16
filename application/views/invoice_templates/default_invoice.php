@@ -20,7 +20,7 @@
                 width:100%;
                 padding: 0px;
             }
-            #header table td {
+            #header table td, .amount-summary td {
                 vertical-align: text-top;
                 padding: 5px;
             }
@@ -28,12 +28,16 @@
                 color:#000;
                 font-size: 18px;
             }
-            #invoice-to {
-                /*                display: table;*/
-                /*                content: "";*/
-            }
             #invoice-to td {
                 text-align: left
+            }
+            #invoice-to {
+                margin-bottom: 15px;
+            }
+            #invoice-to-right-table td {
+                padding-right: 5px;
+                padding-left: 5px;
+                text-align: right;
             }
             .seperator {
                 height: 25px
@@ -45,9 +49,6 @@
                 border:none !important;
                 background-color: white !important;
             }
-            .alignr {
-                text-align: right;
-            }
         </style>
         
 	</head>
@@ -56,6 +57,7 @@
             <table>
                 <tr>
                     <td id="company-name">
+                        <?php echo invoice_logo(); ?>
                         <h2><?php echo $invoice->user_name; ?></h2>
                         <p>
                             <?php if ($invoice->user_address_1) { echo $invoice->user_address_1 . '<br>'; } ?>
@@ -67,40 +69,39 @@
                             <?php if ($invoice->user_fax) { ?><abbr>F:</abbr><?php echo $invoice->user_fax; ?><?php } ?>
                         </p>
                     </td>
-                    <td class="alignr"><h2><?php echo lang('invoice'); ?> <?php echo $invoice->invoice_number; ?></h2></td>
+                    <td style="text-align: right;"><h2><?php echo lang('invoice'); ?> <?php echo $invoice->invoice_number; ?></h2></td>
                 </tr>
             </table>
         </div>
         <div id="invoice-to">
             <table style="width: 100%;">
                 <tr>
-                    <td>
-                        <h2><?php echo $invoice->client_name; ?></h2>
-                        <p>
+                    <td style="padding-left: 5px;">
+                        <p><?php echo lang('bill_to'); ?>:</p>
+                        <p><?php echo $invoice->client_name; ?><br>
                             <?php if ($invoice->client_address_1) { echo $invoice->client_address_1 . '<br>'; } ?>
                             <?php if ($invoice->client_address_2) { echo $invoice->client_address_2 . '<br>'; } ?>
                             <?php if ($invoice->client_city) { echo $invoice->client_city . ' '; } ?>
                             <?php if ($invoice->client_state) { echo $invoice->client_state . ' '; } ?>
                             <?php if ($invoice->client_zip) { echo $invoice->client_zip . '<br>'; } ?>
                             <?php if ($invoice->client_phone) { ?><abbr>P:</abbr><?php echo $invoice->client_phone; ?><br><?php } ?>
-
                         </p>
                     </td>
                     <td style="width:40%;"></td>
-                    <td>
-                        <table>
+                    <td style="text-align: right;">
+                        <table id="invoice-to-right-table">
                             <tbody>
                                 <tr>
-                                    <td><?php echo lang('invoice_date'); ?></td>
-                                    <td><?php echo date_from_mysql($invoice->invoice_date_created); ?></td>
+                                    <td><?php echo lang('invoice_date'); ?>: </td>
+                                    <td><?php echo date_from_mysql($invoice->invoice_date_created, TRUE); ?></td>
                                 </tr>
                                 <tr>
-                                    <td><?php echo lang('due_date'); ?></td>
-                                    <td><?php echo date_from_mysql($invoice->invoice_date_due); ?></td>
+                                    <td><?php echo lang('due_date'); ?>: </td>
+                                    <td><?php echo date_from_mysql($invoice->invoice_date_due, TRUE); ?></td>
                                 </tr>
                                 <tr>
-                                    <td><?php echo lang('amount_due'); ?></td>
-                                    <td><?php echo format_currency($invoice->invoice_total); ?></td>
+                                    <td><?php echo lang('amount_due'); ?>: </td>
+                                    <td><?php echo format_currency($invoice->invoice_balance); ?></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -109,59 +110,69 @@
             </table>
         </div>
         <div id="invoice-items">
-            <table class="table table-striped">
+            <table class="table table-striped" style="width: 100%;">
                 <thead>
                     <tr>
-                        <th><?php echo lang('qty'); ?></th>
                         <th><?php echo lang('item'); ?></th>
                         <th><?php echo lang('description'); ?></th>
-                        <th><?php echo lang('price'); ?></th>
-                        <th><?php echo lang('total'); ?></th>
+                        <th style="text-align: right;"><?php echo lang('qty'); ?></th>
+                        <th style="text-align: right;"><?php echo lang('price'); ?></th>
+                        <th style="text-align: right;"><?php echo lang('total'); ?></th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($items as $item) : ?>
+                    <?php foreach ($items as $item) { ?>
                         <tr>
-                            <td><?php echo $item->item_quantity; ?></td>
                             <td><?php echo $item->item_name; ?></td>
                             <td><?php echo $item->item_description; ?></td>
-                            <td><?php echo format_currency($item->item_price); ?></td>
-                            <td><?php echo format_currency($item->item_subtotal); ?></td>
+                            <td style="text-align: right;"><?php echo $item->item_quantity; ?></td>
+                            <td style="text-align: right;"><?php echo format_currency($item->item_price); ?></td>
+                            <td style="text-align: right;"><?php echo format_currency($item->item_subtotal); ?></td>
                         </tr>
-                    <?php endforeach ?>
-                    <tr>
-                        <td colspan="3"></td>
-                        <td><?php echo lang('subtotal'); ?>:</td>
-                        <td><?php echo format_currency($invoice->invoice_item_subtotal); ?></td>
-                    </tr>
-                    <?php foreach ($invoice_tax_rates as $invoice_tax_rate) : ?>
-                        <tr>    
-                            <td class="no-bottom-border" colspan="3"></td>
-                            <td><?php echo $invoice_tax_rate->invoice_tax_rate_name . ' ' . $invoice_tax_rate->invoice_tax_rate_percent; ?>%</td>
-                            <td><?php echo format_currency($invoice_tax_rate->invoice_tax_rate_amount); ?></td>
-                        </tr>
-                    <?php endforeach ?>
-                    <tr>
-                        <td class="no-bottom-border" colspan="3"></td>
-                        <td><?php echo lang('total'); ?>:</td>
-                        <td><?php echo format_currency($invoice->invoice_total); ?></td>
-                    </tr>
-                    <tr>
-                        <td class="no-bottom-border" colspan="3"></td>
-                        <td><?php echo lang('paid'); ?>:</td>
-                        <td><?php echo format_currency($invoice->invoice_paid) ?></td>
-                    </tr>
-                    <tr>
-                        <td class="no-bottom-border" colspan="3"></td>                
-                        <td><?php echo lang('balance'); ?>:</td>
-                        <td><strong><?php echo format_currency($invoice->invoice_balance) ?></strong></td>
-                    </tr>
+                    <?php } ?>
                 </tbody>
             </table>
+            <table>
+                <tr>
+                    <td style="text-align: right;">
+                        <table class="amount-summary">
+                            <tr>
+                                <td style="text-align: right;"><?php echo lang('subtotal'); ?>:</td>
+                                <td style="text-align: right;"><?php echo format_currency($invoice->invoice_item_subtotal); ?></td>
+                            </tr>
+                            <?php if ($invoice->invoice_item_tax_total > 0) { ?>
+                            <tr>
+                                <td style="text-align: right;"><?php echo lang('item_tax'); ?></td>
+                                <td style="text-align: right;"><?php echo format_currency($invoice->invoice_item_tax_total); ?></td>
+                            </tr>
+                            <?php } ?>
+                            <?php foreach ($invoice_tax_rates as $invoice_tax_rate) : ?>
+                                <tr>    
+                                    <td style="text-align: right;"><?php echo $invoice_tax_rate->invoice_tax_rate_name . ' ' . $invoice_tax_rate->invoice_tax_rate_percent; ?>%</td>
+                                    <td style="text-align: right;"><?php echo format_currency($invoice_tax_rate->invoice_tax_rate_amount); ?></td>
+                                </tr>
+                            <?php endforeach ?>
+                            <tr>
+                                <td style="text-align: right;"><?php echo lang('total'); ?>:</td>
+                                <td style="text-align: right;"><?php echo format_currency($invoice->invoice_total); ?></td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: right;"><?php echo lang('paid'); ?>:</td>
+                                <td style="text-align: right;"><?php echo format_currency($invoice->invoice_paid) ?></td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: right;"><?php echo lang('balance'); ?>:</td>
+                                <td style="text-align: right;"><strong><?php echo format_currency($invoice->invoice_balance) ?></strong></td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+            
             <div class="seperator"></div>
             <?php if ($invoice->invoice_terms) { ?>
             <h4><?php echo lang('terms'); ?></h4>
-            <p><?php echo $invoice->invoice_terms; ?></p>
+            <p><?php echo nl2br($invoice->invoice_terms); ?></p>
             <?php } ?>
         </div>
 	</body>

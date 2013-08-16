@@ -11,8 +11,8 @@ if (!defined('BASEPATH'))
  * @package		FusionInvoice
  * @author		Jesse Terry
  * @copyright	Copyright (c) 2012 - 2013, Jesse Terry
- * @license		http://www.fusioninvoice.com/license.txt
- * @link		http://www.fusioninvoice.
+ * @license		http://www.fusioninvoice.com/support/page/license-agreement
+ * @link		http://www.fusioninvoice.com
  * 
  */
 
@@ -35,6 +35,12 @@ class Mdl_User_Clients extends MY_Model {
     public function default_order_by()
     {
         $this->db->order_by('fi_clients.client_name');
+    }
+    
+    public function assigned_to($user_id)
+    {
+        $this->filter_where('fi_user_clients.user_id', $user_id);
+        return $this;
     }
     
 }

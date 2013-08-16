@@ -11,8 +11,8 @@ if (!defined('BASEPATH'))
  * @package		FusionInvoice
  * @author		Jesse Terry
  * @copyright	Copyright (c) 2012 - 2013, Jesse Terry
- * @license		http://www.fusioninvoice.com/license.txt
- * @link		http://www.fusioninvoice.
+ * @license		http://www.fusioninvoice.com/support/page/license-agreement
+ * @link		http://www.fusioninvoice.com
  * 
  */
 
@@ -25,9 +25,12 @@ class Tax_Rates extends Admin_Controller {
 		$this->load->model('mdl_tax_rates');
 	}
 	
-	public function index()
+	public function index($page = 0)
 	{
-		$this->layout->set('tax_rates', $this->mdl_tax_rates->paginate()->result());
+        $this->mdl_tax_rates->paginate(site_url('tax_rates/index'), $page);
+        $tax_rates = $this->mdl_tax_rates->result();
+        
+		$this->layout->set('tax_rates', $tax_rates);
 		$this->layout->buffer('content', 'tax_rates/index');
 		$this->layout->render();
 	}
@@ -47,7 +50,10 @@ class Tax_Rates extends Admin_Controller {
 		
 		if ($id and !$this->input->post('btn_submit'))
 		{
-			$this->mdl_tax_rates->prep_form($id);
+			if (!$this->mdl_tax_rates->prep_form($id))
+            {
+                show_404();
+            }
 		}
 		
 		$this->layout->buffer('content', 'tax_rates/form');

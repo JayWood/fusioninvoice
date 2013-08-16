@@ -11,8 +11,8 @@ if (!defined('BASEPATH'))
  * @package		FusionInvoice
  * @author		Jesse Terry
  * @copyright	Copyright (c) 2012 - 2013, Jesse Terry
- * @license		http://www.fusioninvoice.com/license.txt
- * @link		http://www.fusioninvoice.
+ * @license		http://www.fusioninvoice.com/support/page/license-agreement
+ * @link		http://www.fusioninvoice.com
  * 
  */
 
@@ -93,9 +93,10 @@ class Payment_Handler extends Base_Controller {
                 $this->load->model('payments/mdl_payments');
 
                 $db_array = array(
-                    'invoice_id'     => $invoice->invoice_id,
-                    'payment_date'   => date('Y-m-d'),
-                    'payment_amount' => $invoice->invoice_balance
+                    'invoice_id'        => $invoice->invoice_id,
+                    'payment_date'      => date('Y-m-d'),
+                    'payment_amount'    => $invoice->invoice_balance,
+                    'payment_method_id' => ($this->mdl_settings->setting('online_payment_method')) ? $this->mdl_settings->setting('online_payment_method') : 0
                 );
 
                 $this->mdl_payments->save(NULL, $db_array);
@@ -149,7 +150,7 @@ class Payment_Handler extends Base_Controller {
             // Create the parameters
             $params = array(
                 'amount'   => $invoice->invoice_balance,
-                'currency'    => $this->mdl_settings->setting('merchant_currency_code')
+                'currency' => $this->mdl_settings->setting('merchant_currency_code')
             );
 
             // Get the response

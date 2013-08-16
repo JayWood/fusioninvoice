@@ -7,7 +7,13 @@
 		
 		// Display the create invoice modal
 		$('#create-invoice').modal('show');
-		
+        
+        $('#create-invoice').on('shown', function() {
+            $("#client_name").focus();
+        });
+        
+        $('#client_name').typeahead();
+        
 		// Creates the invoice
 		$('#invoice_create_confirm').click(function()
 		{
@@ -40,7 +46,7 @@
 	
 </script>
 
-<div id="create-invoice" class="modal hide fade">
+<div id="create-invoice" class="modal hide">
 	<form class="form-horizontal">
 		<div class="modal-header">
 			<a data-dismiss="modal" class="close">x</a>
@@ -51,7 +57,7 @@
 			<div class="control-group">
 				<label class="control-label"><?php echo lang('client'); ?>: </label>
 				<div class="controls">
-					<input type="text" name="client_name" id="client_name" value="<?php echo $client_name; ?>" style="margin: 0 auto;" data-provide="typeahead" data-items="8" data-source='' autocomplete="off">
+					<input type="text" name="client_name" id="client_name" value="<?php echo $client_name; ?>" style="margin: 0 auto;" autocomplete="off">
 				</div>
 			</div>
 

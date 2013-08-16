@@ -11,8 +11,8 @@ if (!defined('BASEPATH'))
  * @package		FusionInvoice
  * @author		Jesse Terry
  * @copyright	Copyright (c) 2012 - 2013, Jesse Terry
- * @license		http://www.fusioninvoice.com/license.txt
- * @link		http://www.fusioninvoice.
+ * @license		http://www.fusioninvoice.com/support/page/license-agreement
+ * @link		http://www.fusioninvoice.com
  * 
  */
 
@@ -25,9 +25,12 @@ class Invoice_Groups extends Admin_Controller {
 		$this->load->model('mdl_invoice_groups');
 	}
 	
-	public function index()
+	public function index($page = 0)
 	{
-		$this->layout->set('invoice_groups', $this->mdl_invoice_groups->paginate()->result());
+        $this->mdl_invoice_groups->paginate(site_url('invoice_groups/index'), $page);
+        $invoice_groups = $this->mdl_invoice_groups->result();
+        
+		$this->layout->set('invoice_groups', $invoice_groups);
 		$this->layout->buffer('content', 'invoice_groups/index');
 		$this->layout->render();
 	}
@@ -47,8 +50,16 @@ class Invoice_Groups extends Admin_Controller {
 		
 		if ($id and !$this->input->post('btn_submit'))
 		{
-			$this->mdl_invoice_groups->prep_form($id);
+			if (!$this->mdl_invoice_groups->prep_form($id))
+            {
+                show_404();
+            }
 		}
+        elseif (!$id)
+        {
+            $this->mdl_invoice_groups->set_form_value('invoice_group_left_pad', 0);
+            $this->mdl_invoice_groups->set_form_value('invoice_group_next_id', 1);
+        }
 		
 		$this->layout->buffer('content', 'invoice_groups/form');
 		$this->layout->render();

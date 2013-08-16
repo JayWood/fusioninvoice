@@ -11,8 +11,8 @@ if (!defined('BASEPATH'))
  * @package		FusionInvoice
  * @author		Jesse Terry
  * @copyright	Copyright (c) 2012 - 2013, Jesse Terry
- * @license		http://www.fusioninvoice.com/license.txt
- * @link		http://www.fusioninvoice.
+ * @license		http://www.fusioninvoice.com/support/page/license-agreement
+ * @link		http://www.fusioninvoice.com
  * 
  */
 
@@ -25,11 +25,14 @@ class Payments extends Admin_Controller {
         $this->load->model('mdl_payments');
     }
 
-    public function index()
+    public function index($page = 0)
     {
+        $this->mdl_payments->paginate(site_url('payments/index'), $page);
+        $payments = $this->mdl_payments->result();
+
         $this->layout->set(
             array(
-                'payments'           => $this->mdl_payments->paginate()->result(),
+                'payments'           => $payments,
                 'filter_display'     => TRUE,
                 'filter_placeholder' => lang('filter_payments'),
                 'filter_method'      => 'filter_payments'
@@ -60,7 +63,12 @@ class Payments extends Admin_Controller {
 
         if (!$this->input->post('btn_submit'))
         {
-            $this->mdl_payments->prep_form($id);
+            $prep_form = $this->mdl_payments->prep_form($id);
+            
+            if ($id and !$prep_form)
+            {
+                show_404();
+            }
 
             $this->load->model('custom_fields/mdl_payment_custom');
 
@@ -80,9 +88,12 @@ class Payments extends Admin_Controller {
         }
         else
         {
-            foreach ($this->input->post('custom') as $key=>$val)
+            if ($this->input->post('custom'))
             {
-                $this->mdl_payments->set_form_value('custom[' . $key . ']', $val);
+                foreach ($this->input->post('custom') as $key => $val)
+                {
+                    $this->mdl_payments->set_form_value('custom[' . $key . ']', $val);
+                }
             }
         }
 
@@ -90,12 +101,22 @@ class Payments extends Admin_Controller {
         $this->load->model('payment_methods/mdl_payment_methods');
         $this->load->model('custom_fields/mdl_custom_fields');
 
+        $open_invoices = $this->mdl_invoices->where('fi_invoice_amounts.invoice_balance >', 0)->get()->result();
+
+        $amounts = array();
+
+        foreach ($open_invoices as $open_invoice)
+        {
+            $amounts['invoice' . $open_invoice->invoice_id] = format_amount($open_invoice->invoice_balance);
+        }
+        
         $this->layout->set(
             array(
                 'payment_id'      => $id,
                 'payment_methods' => $this->mdl_payment_methods->get()->result(),
-                'open_invoices'   => $this->mdl_invoices->where('fi_invoice_amounts.invoice_balance >', 0)->get()->result(),
-                'custom_fields'   => $this->mdl_custom_fields->by_table('fi_payment_custom')->get()->result()
+                'open_invoices'   => $open_invoices,
+                'custom_fields'   => $this->mdl_custom_fields->by_table('fi_payment_custom')->get()->result(),
+                'amounts'         => json_encode($amounts)
             )
         );
 

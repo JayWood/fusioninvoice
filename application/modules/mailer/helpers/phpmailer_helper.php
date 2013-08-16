@@ -11,8 +11,8 @@ if (!defined('BASEPATH'))
  * @package		FusionInvoice
  * @author		Jesse Terry
  * @copyright	Copyright (c) 2012 - 2013, Jesse Terry
- * @license		http://www.fusioninvoice.com/license.txt
- * @link		http://www.fusioninvoice.
+ * @license		http://www.fusioninvoice.com/support/page/license-agreement
+ * @link		http://www.fusioninvoice.com
  * 
  */
 
@@ -27,27 +27,43 @@ function phpmail_send($from, $to, $subject, $message, $attachment_path = NULL, $
 	$mail			 = new PHPMailer();
 	$mail->CharSet	 = 'UTF-8';
 	$mail->IsHtml();
-	$mail->IsSMTP();
+	
+	switch ($CI->mdl_settings->setting('email_send_method'))
+	{
+	    case 'smtp':
+    	    $mail->IsSMTP();
 
-	// Set the basic properties
-	$mail->Host		 = $CI->mdl_settings->setting('smtp_server_address');
-	$mail->Port		 = $CI->mdl_settings->setting('smtp_port');
+        	// Set the basic properties
+        	$mail->Host		 = $CI->mdl_settings->setting('smtp_server_address');
+        	$mail->Port		 = $CI->mdl_settings->setting('smtp_port');
+    	
+        	// Is SMTP authentication required?
+        	if ($CI->mdl_settings->setting('smtp_authentication'))
+        	{
+        		$mail->SMTPAuth	 = TRUE;
+        		$mail->Username	 = $CI->mdl_settings->setting('smtp_username');
+        		$mail->Password	 = $CI->encrypt->decode($CI->mdl_settings->setting('smtp_password'));
+        	}
+        	
+        	// Is a security method required?
+        	if ($CI->mdl_settings->setting('smtp_security'))
+        	{
+        		$mail->SMTPSecure = $CI->mdl_settings->setting('smtp_security');
+        	}
+        	
+        	break;
+        case 'sendmail':
+            $mail->IsMail();
+            break;
+        case 'phpmail':
+        case 'default':
+            $mail->IsMail();
+            break;
+	}
+
 	$mail->Subject	 = $subject;
 	$mail->Body		 = $message;
 
-	// Is SMTP authentication required?
-	if ($CI->mdl_settings->setting('smtp_authentication'))
-	{
-		$mail->SMTPAuth	 = TRUE;
-		$mail->Username	 = $CI->mdl_settings->setting('smtp_username');
-		$mail->Password	 = $CI->encrypt->decode($CI->mdl_settings->setting('smtp_password'));
-	}
-
-	// Is a security method required?
-	if ($CI->mdl_settings->setting('smtp_security'))
-	{
-		$mail->SMTPSecure = $CI->mdl_settings->setting('smtp_security');
-	}
 
 	if (is_array($from))
 	{

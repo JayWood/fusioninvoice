@@ -11,16 +11,17 @@ if (!defined('BASEPATH'))
  * @package		FusionInvoice
  * @author		Jesse Terry
  * @copyright	Copyright (c) 2012 - 2013, Jesse Terry
- * @license		http://www.fusioninvoice.com/license.txt
- * @link		http://www.fusioninvoice.
+ * @license		http://www.fusioninvoice.com/support/page/license-agreement
+ * @link		http://www.fusioninvoice.com
  * 
  */
 
 class Mdl_Items extends Response_Model {
 
-    public $table       = 'fi_invoice_items';
-    public $primary_key = 'fi_invoice_items.item_id';
-
+    public $table              = 'fi_invoice_items';
+    public $primary_key        = 'fi_invoice_items.item_id';
+    public $date_created_field  = 'item_date_added';
+    
     public function default_select()
     {
         $this->db->select('fi_invoice_item_amounts.*, fi_invoice_items.*, item_tax_rates.tax_rate_percent AS item_tax_rate_percent');
@@ -40,12 +41,12 @@ class Mdl_Items extends Response_Model {
     public function validation_rules()
     {
         return array(
-            'invoice_id'       => array(
+            'invoice_id' => array(
                 'field' => 'invoice_id',
                 'label' => lang('invoice'),
                 'rules' => 'required'
             ),
-            'item_name'        => array(
+            'item_name' => array(
                 'field' => 'item_name',
                 'label' => lang('item_name'),
                 'rules' => 'required'
@@ -54,12 +55,12 @@ class Mdl_Items extends Response_Model {
                 'field' => 'item_description',
                 'label' => lang('description')
             ),
-            'item_quantity'    => array(
+            'item_quantity' => array(
                 'field' => 'item_quantity',
                 'label' => lang('quantity'),
                 'rules' => 'required'
             ),
-            'item_price'       => array(
+            'item_price' => array(
                 'field' => 'item_price',
                 'label' => lang('price'),
                 'rules' => 'required'

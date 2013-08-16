@@ -44,6 +44,7 @@
 					</ul>
 
 					<ul class="nav pull-right settings">
+                        <li><a href="#"><?php echo lang('welcome') . ' ' . $this->session->userdata('user_name'); ?></a></li>
 						<li><a href="<?php echo site_url('sessions/logout'); ?>" class="tip icon logout" data-original-title="<?php echo lang('logout'); ?>" data-placement="bottom"><img src="<?php echo base_url(); ?>assets/default/img/icons/logout.png"></a></li>
 					</ul>
 
@@ -74,7 +75,7 @@
 
 		<script defer src="<?php echo base_url(); ?>assets/default/js/plugins.js"></script>
 		<script defer src="<?php echo base_url(); ?>assets/default/js/script.js"></script>
-		<script defer src="<?php echo base_url(); ?>assets/default/js/bootstrap-datepicker.js"></script>
+		<script src="<?php echo base_url(); ?>assets/default/js/bootstrap-datepicker.js"></script>
 
 		<!--[if lt IE 7 ]>
 			<script src="<?php echo base_url(); ?>assets/default/js/dd_belatedpng.js"></script>

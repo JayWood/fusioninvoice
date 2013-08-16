@@ -98,7 +98,7 @@
 
             <div id="administrator_fields">
                 <fieldset>
-                    <legend>Address</legend>
+                    <legend><?php echo lang('address'); ?></legend>
 
                     <div class="control-group">
                         <label class="control-label"><?php echo lang('street_address'); ?>: </label>

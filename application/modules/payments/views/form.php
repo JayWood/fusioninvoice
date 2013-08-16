@@ -1,3 +1,16 @@
+<script type="text/javascript">
+$(function() {
+   $('#invoice_id').focus();
+   
+   amounts = JSON.parse('<?php echo $amounts; ?>');
+   
+   $('#invoice_id').change(function() {
+       $('#payment_amount').val(amounts["invoice" + $('#invoice_id').val()]);
+   });
+   
+});
+</script>
+
 <form method="post" class="form-horizontal">
     
     <?php if ($payment_id) { ?>
@@ -41,7 +54,7 @@
 			<div class="control-group">
 				<label class="control-label"><?php echo lang('amount'); ?>: </label>
 				<div class="controls">
-					<input type="text" name="payment_amount" id="payment_amount" value="<?php echo $this->mdl_payments->form_value('payment_amount'); ?>">
+					<input type="text" name="payment_amount" id="payment_amount" value="<?php echo format_amount($this->mdl_payments->form_value('payment_amount')); ?>">
 				</div>
 			</div>
 
@@ -50,7 +63,7 @@
 				<label class="control-label"><?php echo lang('payment_method'); ?>: </label>
 				<div class="controls">
 					<select name="payment_method_id">
-						<option value=""></option>
+						<option value="0"></option>
 						<?php foreach ($payment_methods as $payment_method) { ?>
 						<option value="<?php echo $payment_method->payment_method_id; ?>" <?php if ($this->mdl_payments->form_value('payment_method_id') == $payment_method->payment_method_id) { ?>selected="selected"<?php } ?>>
 							<?php echo $payment_method->payment_method_name; ?>

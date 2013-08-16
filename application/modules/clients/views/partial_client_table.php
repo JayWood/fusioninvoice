@@ -5,7 +5,7 @@
 			<th><?php echo lang('client_name'); ?></th>
 			<th><?php echo lang('email_address'); ?></th>
 			<th><?php echo lang('phone_number'); ?></th>
-			<th><?php echo lang('balance'); ?></th>
+			<th style="text-align: right;"><?php echo lang('balance'); ?></th>
 			<th><?php echo lang('active'); ?></th>
 			<th><?php echo lang('options'); ?></th>
 		</tr>
@@ -16,8 +16,8 @@
 		<tr>
 			<td><?php echo anchor('clients/view/' . $client->client_id, $client->client_name); ?></td>
 			<td><?php echo $client->client_email; ?></td>
-			<td><?php echo $client->client_phone; ?></td>
-			<td><?php echo format_currency($client->client_invoice_balance); ?></td>
+            <td><?php echo (($client->client_phone ? $client->client_phone : ($client->client_mobile ? $client->client_mobile : ''))); ?></td>
+			<td style="text-align: right;"><?php echo format_currency($client->client_invoice_balance); ?></td>
 			<td><?php echo ($client->client_active) ? lang('yes') : lang('no'); ?></td>
 			<td>
 				<div class="options btn-group">
@@ -34,12 +34,12 @@
 							</a>
 						</li>
 						<li>
-							<a href="#" class="create-quote">
+							<a href="#" class="client-create-quote" data-client-name="<?php echo $client->client_name; ?>">
 								<i class="icon-file"></i> <?php echo lang('create_quote'); ?>
 							</a>
 						</li>
 						<li>
-							<a href="#" class="create-invoice">
+							<a href="#" class="client-create-invoice" data-client-name="<?php echo $client->client_name; ?>">
 								<i class="icon-file"></i> <?php echo lang('create_invoice'); ?>
 							</a>
 						</li>

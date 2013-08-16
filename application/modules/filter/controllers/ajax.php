@@ -11,8 +11,8 @@ if (!defined('BASEPATH'))
  * @package		FusionInvoice
  * @author		Jesse Terry
  * @copyright	Copyright (c) 2012 - 2013, Jesse Terry
- * @license		http://www.fusioninvoice.com/license.txt
- * @link		http://www.fusioninvoice.
+ * @license		http://www.fusioninvoice.com/support/page/license-agreement
+ * @link		http://www.fusioninvoice.com
  * 
  */
 
@@ -43,6 +43,30 @@ class Ajax extends Admin_Controller {
 
 		$this->layout->load_view('invoices/partial_invoice_table', $data);
 	}
+    
+	public function filter_quotes()
+	{
+		$this->load->model('quotes/mdl_quotes');
+
+		$query = $this->input->post('filter_query');
+
+		$keywords	 = explode(' ', $query);
+		$params		 = array();
+
+		foreach ($keywords as $keyword)
+		{
+			if ($keyword)
+			{
+				$this->mdl_quotes->like("CONCAT_WS('^',quote_number,quote_date_created,quote_date_expires,client_name,quote_total)", $keyword);
+			}
+		}
+
+		$data = array(
+			'quotes' => $this->mdl_quotes->get()->result()
+		);
+
+		$this->layout->load_view('quotes/partial_quote_table', $data);
+	}
 	
 	public function filter_clients()
 	{
@@ -62,7 +86,7 @@ class Ajax extends Admin_Controller {
 		}
 
 		$data = array(
-			'records' => $this->mdl_clients->with_totals()->get()->result()
+			'records' => $this->mdl_clients->with_total_balance()->get()->result()
 		);
 
 		$this->layout->load_view('clients/partial_client_table', $data);

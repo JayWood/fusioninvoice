@@ -11,8 +11,8 @@ if (!defined('BASEPATH'))
  * @package		FusionInvoice
  * @author		Jesse Terry
  * @copyright	Copyright (c) 2012 - 2013, Jesse Terry
- * @license		http://www.fusioninvoice.com/license.txt
- * @link		http://www.fusioninvoice.
+ * @license		http://www.fusioninvoice.com/support/page/license-agreement
+ * @link		http://www.fusioninvoice.com
  * 
  */
 
@@ -26,6 +26,8 @@ class Ajax extends Admin_Controller {
         $this->load->model('invoices/mdl_invoices');
 
         $invoice_id = $this->input->post('invoice_id');
+        
+        $this->mdl_invoices->set_id($invoice_id);
 
         if ($this->mdl_invoices->run_validation('validation_rules_save_invoice'))
         {
@@ -35,7 +37,14 @@ class Ajax extends Admin_Controller {
             {
                 if ($item->item_name)
                 {
-                    $this->mdl_items->save($invoice_id, isset($item->item_id) ? $item->item_id : NULL, $item);
+                    $item->item_quantity = standardize_amount($item->item_quantity);
+                    $item->item_price    = standardize_amount($item->item_price);
+
+                    $item_id = ($item->item_id) ?: NULL;
+                    
+                    unset($item->item_id);
+                    
+                    $this->mdl_items->save($invoice_id, $item_id, $item);
                 }
             }
 
@@ -64,7 +73,7 @@ class Ajax extends Admin_Controller {
         if ($this->input->post('custom'))
         {
             $db_array = array();
-            
+
             foreach ($this->input->post('custom') as $custom)
             {
                 // I hate myself for this...
@@ -125,6 +134,30 @@ class Ajax extends Admin_Controller {
 
         echo json_encode($response);
     }
+    
+    public function create_recurring()
+    {
+        $this->load->model('invoices/mdl_invoices_recurring');
+
+        if ($this->mdl_invoices_recurring->run_validation())
+        {
+            $this->mdl_invoices_recurring->save();
+            
+            $response = array(
+                'success'    => 1,
+            );
+        }
+        else
+        {
+            $this->load->helper('json_error');
+            $response = array(
+                'success'           => 0,
+                'validation_errors' => json_errors()
+            );
+        }
+        
+        echo json_encode($response);
+    }
 
     public function get_item()
     {
@@ -149,6 +182,28 @@ class Ajax extends Admin_Controller {
         );
 
         $this->layout->load_view('invoices/modal_create_invoice', $data);
+    }
+
+    public function modal_create_recurring()
+    {
+        $this->load->module('layout');
+
+        $this->load->model('mdl_invoices_recurring');
+
+        $data = array(
+            'invoice_id'            => $this->input->post('invoice_id'),
+            'recur_frequencies' => $this->mdl_invoices_recurring->recur_frequencies
+        );
+
+        $this->layout->load_view('invoices/modal_create_recurring', $data);
+    }
+    
+    public function get_recur_start_date()
+    {
+        $invoice_date = $this->input->post('invoice_date');
+        $recur_frequency = $this->input->post('recur_frequency');
+        
+        echo increment_user_date($invoice_date, $recur_frequency);
     }
 
     public function modal_copy_invoice()
@@ -177,42 +232,14 @@ class Ajax extends Admin_Controller {
 
         if ($this->mdl_invoices->run_validation())
         {
-            $invoice_id = $this->mdl_invoices->save();
+            $target_id = $this->mdl_invoices->save();
+            $source_id = $this->input->post('invoice_id');
 
-            $invoice_items = $this->mdl_items->where('invoice_id', $this->input->post('invoice_id'))->get()->result();
-
-            foreach ($invoice_items as $invoice_item)
-            {
-                $db_array = array(
-                    'invoice_id'       => $invoice_id,
-                    'item_tax_rate_id' => $invoice_item->item_tax_rate_id,
-                    'item_name'        => $invoice_item->item_name,
-                    'item_description' => $invoice_item->item_description,
-                    'item_quantity'    => $invoice_item->item_quantity,
-                    'item_price'       => $invoice_item->item_price,
-                    'item_order'       => $invoice_item->item_order
-                );
-
-                $this->mdl_items->save($invoice_id, NULL, $db_array);
-            }
-
-            $invoice_tax_rates = $this->mdl_invoice_tax_rates->where('invoice_id', $this->input->post('invoice_id'))->get()->result();
-
-            foreach ($invoice_tax_rates as $invoice_tax_rate)
-            {
-                $db_array = array(
-                    'invoice_id'              => $invoice_id,
-                    'tax_rate_id'             => $invoice_tax_rate->tax_rate_id,
-                    'include_item_tax'        => $invoice_tax_rate->include_item_tax,
-                    'invoice_tax_rate_amount' => $invoice_tax_rate->invoice_tax_rate_amount
-                );
-
-                $this->mdl_invoice_tax_rates->save($invoice_id, NULL, $db_array);
-            }
+            $this->mdl_invoices->copy_invoice($source_id, $target_id);
 
             $response = array(
                 'success'    => 1,
-                'invoice_id' => $invoice_id
+                'invoice_id' => $target_id
             );
         }
         else

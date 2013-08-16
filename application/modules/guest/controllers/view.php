@@ -11,8 +11,8 @@ if (!defined('BASEPATH'))
  * @package		FusionInvoice
  * @author		Jesse Terry
  * @copyright	Copyright (c) 2012 - 2013, Jesse Terry
- * @license		http://www.fusioninvoice.com/license.txt
- * @link		http://www.fusioninvoice.
+ * @license		http://www.fusioninvoice.com/support/page/license-agreement
+ * @link		http://www.fusioninvoice.com
  * 
  */
 
@@ -39,9 +39,7 @@ class View extends Base_Controller {
                 'flash_message'     => $this->session->flashdata('flash_message')
             );
 
-            $html = $this->load->view('invoice_templates/public_invoice', $data, TRUE);
-
-            echo $html;
+            $this->load->view('invoice_templates/public_invoice', $data);
         }
     }
 
@@ -71,9 +69,9 @@ class View extends Base_Controller {
 
             $html = $this->load->view('invoice_templates/' . $invoice_template, $data, TRUE);
 
-            $this->load->helper('dompdf');
+            $this->load->helper('mpdf');
 
-            return pdf_create($html, 'Invoice_' . $invoice->invoice_number, $stream);
+            return pdf_create($html, lang('invoice') . '_' . $invoice->invoice_number, $stream);
         }
     }
 
@@ -86,19 +84,19 @@ class View extends Base_Controller {
         if ($quote->num_rows() == 1)
         {
             $this->load->model('quotes/mdl_quote_items');
+            $this->load->model('quotes/mdl_quote_tax_rates');
 
             $quote = $quote->row();
 
             $data = array(
                 'quote'           => $quote,
                 'items'           => $this->mdl_quote_items->where('quote_id', $quote->quote_id)->get()->result(),
+                'quote_tax_rates' => $this->mdl_quote_tax_rates->where('quote_id', $quote->quote_id)->get()->result(),
                 'quote_url_key'   => $quote_url_key,
                 'flash_message'   => $this->session->flashdata('flash_message')
             );
 
-            $html = $this->load->view('quote_templates/public_quote', $data, TRUE);
-
-            echo $html;
+            $this->load->view('quote_templates/public_quote', $data);
         }
     }
 
@@ -106,6 +104,7 @@ class View extends Base_Controller {
     {
         $this->load->model('quotes/mdl_quotes');
         $this->load->model('quotes/mdl_quote_items');
+        $this->load->model('quotes/mdl_quote_tax_rates');
 
         $quote = $this->mdl_quotes->where('quote_url_key', $quote_url_key)->get();
 
@@ -120,15 +119,16 @@ class View extends Base_Controller {
 
             $data = array(
                 'quote'           => $quote,
+                'quote_tax_rates' => $this->mdl_quote_tax_rates->where('quote_id', $quote->quote_id)->get()->result(),
                 'items'           => $this->mdl_quote_items->where('quote_id', $quote->quote_id)->get()->result(),
                 'output_type'     => 'pdf'
             );
 
             $html = $this->load->view('quote_templates/' . $quote_template, $data, TRUE);
 
-            $this->load->helper('dompdf');
+            $this->load->helper('mpdf');
 
-            return pdf_create($html, 'Quote_' . $quote->quote_number, $stream);
+            return pdf_create($html, lang('quote') . '_' . $quote->quote_number, $stream);
         }
     }
 

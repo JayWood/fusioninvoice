@@ -11,8 +11,8 @@ if (!defined('BASEPATH'))
  * @package		FusionInvoice
  * @author		Jesse Terry
  * @copyright	Copyright (c) 2012 - 2013, Jesse Terry
- * @license		http://www.fusioninvoice.com/license.txt
- * @link		http://www.fusioninvoice.
+ * @license		http://www.fusioninvoice.com/support/page/license-agreement
+ * @link		http://www.fusioninvoice.com
  * 
  */
 
@@ -239,7 +239,8 @@ class Setup extends MX_Controller {
         $writables = array(
             './uploads',
             './uploads/temp',
-            APPPATH . 'config/database.php'
+            './' . APPPATH . 'config/database.php',
+            './' . APPPATH . 'helpers/mpdf/tmp'
         );
 
         foreach ($writables as $writable)
@@ -308,8 +309,8 @@ class Setup extends MX_Controller {
         $checks = array();
 
         $php_required = '5.3';
-        $php_installed = phpversion();
-
+        $php_installed = PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION;
+        
         if ($php_installed < $php_required)
         {
             $this->errors += 1;
@@ -345,7 +346,7 @@ class Setup extends MX_Controller {
     private function load_ci_database()
     {
         $this->load->database();
-        $this->db->db_debug = 0;
+        // $this->db->db_debug = 0;
     }
 
 }

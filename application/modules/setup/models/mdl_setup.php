@@ -11,8 +11,8 @@ if (!defined('BASEPATH'))
  * @package		FusionInvoice
  * @author		Jesse Terry
  * @copyright	Copyright (c) 2012 - 2013, Jesse Terry
- * @license		http://www.fusioninvoice.com/license.txt
- * @link		http://www.fusioninvoice.
+ * @license		http://www.fusioninvoice.com/support/page/license-agreement
+ * @link		http://www.fusioninvoice.com
  * 
  */
 
@@ -32,8 +32,10 @@ class Mdl_Setup extends CI_Model {
         {
             return FALSE;
         }
-
+        
         $this->install_default_data();
+
+        $this->install_default_settings();
 
         return TRUE;
     }
@@ -84,6 +86,8 @@ class Mdl_Setup extends CI_Model {
             return FALSE;
         }
 
+        $this->install_default_settings();
+
         return TRUE;
     }
 
@@ -107,8 +111,13 @@ class Mdl_Setup extends CI_Model {
     {
         $this->db->insert('fi_invoice_groups', array('invoice_group_name'    => 'Invoice Default', 'invoice_group_next_id' => 1));
         $this->db->insert('fi_invoice_groups', array('invoice_group_name'    => 'Quote Default', 'invoice_group_prefix'  => 'QUO', 'invoice_group_next_id' => 1));
+    }
 
-        $install_settings = array(
+    private function install_default_settings()
+    {
+        $this->load->helper('string');
+        
+        $default_settings = array(
             'default_language'          => $this->session->userdata('fi_lang'),
             'date_format'               => 'm/d/Y',
             'currency_symbol'           => '$',
@@ -118,17 +127,26 @@ class Mdl_Setup extends CI_Model {
             'default_invoice_group'     => 1,
             'default_quote_group'       => 2,
             'default_invoice_template'  => 'default_invoice',
-            'default_quote_template'    => 'default_quote'
+            'default_quote_template'    => 'default_quote',
+            'thousands_separator'       => ',',
+            'decimal_point'             => '.',
+            'cron_key'                  => random_string('alnum', 16),
+            'tax_rate_decimal_places'   => 2
         );
 
-        foreach ($install_settings as $setting_key => $setting_value)
+        foreach ($default_settings as $setting_key => $setting_value)
         {
-            $db_array = array(
-                'setting_key'   => $setting_key,
-                'setting_value' => $setting_value
-            );
+            $this->db->where('setting_key', $setting_key);
+            
+            if (!$this->db->get('fi_settings')->num_rows())
+            {
+                $db_array = array(
+                    'setting_key'   => $setting_key,
+                    'setting_value' => $setting_value
+                );
 
-            $this->db->insert('fi_settings', $db_array);
+                $this->db->insert('fi_settings', $db_array);
+            }
         }
     }
 

@@ -10,7 +10,7 @@
 	});
 </script>
 
-<div id="delete-invoice" class="modal hide fade">
+<div id="delete-invoice" class="modal hide">
 	<div class="modal-header">
 		<a data-dismiss="modal" class="close">×</a>
 		<h3><?php echo lang('delete_invoice'); ?></h3>

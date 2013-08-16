@@ -11,8 +11,8 @@ if (!defined('BASEPATH'))
  * @package		FusionInvoice
  * @author		Jesse Terry
  * @copyright	Copyright (c) 2012 - 2013, Jesse Terry
- * @license		http://www.fusioninvoice.com/license.txt
- * @link		http://www.fusioninvoice.
+ * @license		http://www.fusioninvoice.com/support/page/license-agreement
+ * @link		http://www.fusioninvoice.com
  * 
  */
 
@@ -20,13 +20,13 @@ class Mdl_Quotes extends Response_Model {
 
     public $table               = 'fi_quotes';
     public $primary_key         = 'fi_quotes.quote_id';
-    public $date_modified_field = 'invoice_date_modified';
+    public $date_modified_field = 'quote_date_modified';
 
     public function default_select()
     {
         $this->db->select("
-            fi_quote_custom.*,
-            fi_client_custom.*, 
+            SQL_CALC_FOUND_ROWS fi_quote_custom.*,
+            fi_client_custom.*,
             fi_user_custom.*,
             fi_users.user_name, 
 			fi_users.user_company,
@@ -43,9 +43,17 @@ class Mdl_Quotes extends Response_Model {
 			fi_users.user_web,
 			fi_clients.*,
 			fi_quote_amounts.quote_amount_id,
+			IFNULL(fi_quote_amounts.quote_item_subtotal, '0.00') AS quote_item_subtotal,
+			IFNULL(fi_quote_amounts.quote_item_tax_total, '0.00') AS quote_item_tax_total,
+			IFNULL(fi_quote_amounts.quote_tax_total, '0.00') AS quote_tax_total,
 			IFNULL(fi_quote_amounts.quote_total, '0.00') AS quote_total,
-			fi_quotes.*,
-			fi_invoices.invoice_number", FALSE);
+			(CASE 
+			WHEN (fi_quotes.quote_date_expires > NOW() AND fi_quotes.invoice_id = 0) THEN 'Open'
+			WHEN (fi_quotes.quote_date_expires <= NOW() AND fi_quotes.invoice_id = 0) THEN 'Expired'
+			WHEN (fi_quotes.invoice_id <> 0) THEN 'Invoiced'
+			ELSE 'Unknown' END) AS quote_status,
+            fi_invoices.invoice_number,
+			fi_quotes.*", FALSE);
     }
 
     public function default_order_by()
@@ -74,7 +82,7 @@ class Mdl_Quotes extends Response_Model {
             ),
             'quote_date_created' => array(
                 'field' => 'quote_date_created',
-                'label' => lang('date'),
+                'label' => lang('quote_date'),
                 'rules' => 'required'
             ),
             'invoice_group_id'   => array(
@@ -89,11 +97,100 @@ class Mdl_Quotes extends Response_Model {
             )
         );
     }
-    
+
+    public function validation_rules_save_quote()
+    {
+        return array(
+            'quote_number'       => array(
+                'field' => 'quote_number',
+                'label' => lang('quote_number'),
+                'rules' => 'required|is_unique[fi_quotes.quote_number' . (($this->id) ? '.quote_id.' . $this->id : '') . ']'
+            ),
+            'quote_date_created' => array(
+                'field' => 'quote_date_created',
+                'label' => lang('date'),
+                'rules' => 'required'
+            ),
+            'quote_date_expires'     => array(
+                'field' => 'quote_date_expires',
+                'label' => lang('due_date'),
+                'rules' => 'required'
+            )
+        );
+    }
+
+    public function create($db_array = NULL)
+    {
+        $quote_id = parent::save(NULL, $db_array);
+
+        // Create an quote amount record
+        $db_array = array(
+            'quote_id' => $quote_id
+        );
+
+        $this->db->insert('fi_quote_amounts', $db_array);
+
+        // Create the default quote tax record if applicable
+        if ($this->mdl_settings->setting('default_quote_tax_rate'))
+        {
+            $db_array = array(
+                'quote_id'              => $quote_id,
+                'tax_rate_id'           => $this->mdl_settings->setting('default_quote_tax_rate'),
+                'include_item_tax'      => $this->mdl_settings->setting('default_include_item_tax'),
+                'quote_tax_rate_amount' => 0
+            );
+
+            $this->db->insert('fi_quote_tax_rates', $db_array);
+        }
+
+        return $quote_id;
+    }
+
     public function get_url_key()
     {
         $this->load->helper('string');
         return random_string('unique');
+    }
+
+    /**
+     * Copies quote items, tax rates, etc from source to target
+     * @param int $source_id
+     * @param int $target_id
+     */
+    public function copy_quote($source_id, $target_id)
+    {
+        $this->load->model('quotes/mdl_quote_items');
+
+        $quote_items = $this->mdl_quote_items->where('quote_id', $source_id)->get()->result();
+
+        foreach ($quote_items as $quote_item)
+        {
+            $db_array = array(
+                'quote_id'         => $target_id,
+                'item_tax_rate_id' => $quote_item->item_tax_rate_id,
+                'item_name'        => $quote_item->item_name,
+                'item_description' => $quote_item->item_description,
+                'item_quantity'    => $quote_item->item_quantity,
+                'item_price'       => $quote_item->item_price,
+                'item_order'       => $quote_item->item_order
+            );
+
+            $this->mdl_quote_items->save($target_id, NULL, $db_array);
+        }
+
+        $quote_tax_rates = $this->mdl_quote_tax_rates->where('quote_id', $source_id)->get()->result();
+
+        foreach ($quote_tax_rates as $quote_tax_rate)
+        {
+            $db_array = array(
+                'quote_id'              => $target_id,
+                'tax_rate_id'           => $quote_tax_rate->tax_rate_id,
+                'include_item_tax'      => $quote_tax_rate->include_item_tax,
+                'quote_tax_rate_amount' => $quote_tax_rate->quote_tax_rate_amount
+            );
+
+            $this->mdl_quote_tax_rates->save($target_id, NULL, $db_array);
+        }
     }
 
     public function db_array()
@@ -104,36 +201,28 @@ class Mdl_Quotes extends Response_Model {
         $this->load->model('clients/mdl_clients');
         $db_array['client_id'] = $this->mdl_clients->client_lookup($db_array['client_name']);
         unset($db_array['client_name']);
-        
+
         $db_array['quote_date_created'] = date_to_mysql($db_array['quote_date_created']);
+        $db_array['quote_date_expires']     = $this->get_date_due($db_array['quote_date_created']);
+        $db_array['quote_number']       = $this->get_quote_number($db_array['invoice_group_id']);
 
-        // Calculate the quote date due
-        $quote_due_date                 = new DateTime($db_array['quote_date_created']);
-        $quote_due_date->add(new DateInterval('P' . $this->mdl_settings->setting('quotes_expire_after') . 'D'));
-        $db_array['quote_date_expires'] = $quote_due_date->format('Y-m-d');
-
-        // Get the next quote number for the selected quote group
-        $this->load->model('invoice_groups/mdl_invoice_groups');
-        $db_array['quote_number'] = $this->mdl_invoice_groups->generate_invoice_number($db_array['invoice_group_id']);
-        
         // Generate the unique url key
-        $this->load->helper('string');
         $db_array['quote_url_key'] = $this->get_url_key();
 
         return $db_array;
     }
 
-    public function save($id = NULL, $db_array = NULL)
+    public function get_quote_number($invoice_group_id)
     {
-        $id = parent::save($id, $db_array);
+        $this->load->model('invoice_groups/mdl_invoice_groups');
+        return $this->mdl_invoice_groups->generate_invoice_number($invoice_group_id);
+    }
 
-        $db_array = array(
-            'quote_id' => $id
-        );
-
-        $this->db->insert('fi_quote_amounts', $db_array);
-
-        return $id;
+    public function get_date_due($quote_date_created)
+    {
+        $quote_date_expires = new DateTime($quote_date_created);
+        $quote_date_expires->add(new DateInterval('P' . $this->mdl_settings->setting('quotes_expire_after') . 'D'));
+        return $quote_date_expires->format('Y-m-d');
     }
 
     public function delete($quote_id)
@@ -146,27 +235,27 @@ class Mdl_Quotes extends Response_Model {
 
     public function is_open()
     {
-        $this->where('quote_date_expires > NOW()');
-        $this->where('fi_quotes.invoice_id', 0);
+        $this->filter_where('quote_date_expires > NOW()');
+        $this->filter_where('fi_quotes.invoice_id', 0);
         return $this;
     }
 
     public function is_expired()
     {
-        $this->where('quote_date_expires <= NOW()');
-        $this->where('fi_quotes.invoice_id', 0);
+        $this->filter_where('quote_date_expires <= NOW()');
+        $this->filter_where('fi_quotes.invoice_id', 0);
         return $this;
     }
 
     public function is_invoiced()
     {
-        $this->where('fi_quotes.invoice_id <>', 0);
+        $this->filter_where('fi_quotes.invoice_id <>', 0);
         return $this;
     }
 
     public function by_client($client_id)
     {
-        $this->where('fi_quotes.client_id', $client_id);
+        $this->filter_where('fi_quotes.client_id', $client_id);
         return $this;
     }
 

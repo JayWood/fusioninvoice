@@ -18,7 +18,7 @@
 
 </script>
 
-<div id="add-user-client" class="modal hide fade">
+<div id="add-user-client" class="modal hide">
 	<form class="form-horizontal">
 		<div class="modal-header">
 			<a data-dismiss="modal" class="close">x</a>

@@ -11,8 +11,8 @@ if (!defined('BASEPATH'))
  * @package		FusionInvoice
  * @author		Jesse Terry
  * @copyright	Copyright (c) 2012 - 2013, Jesse Terry
- * @license		http://www.fusioninvoice.com/license.txt
- * @link		http://www.fusioninvoice.
+ * @license		http://www.fusioninvoice.com/support/page/license-agreement
+ * @link		http://www.fusioninvoice.com
  * 
  */
 
@@ -20,6 +20,11 @@ class Mdl_Payment_Methods extends Response_Model {
 	
 	public $table = 'fi_payment_methods';
 	public $primary_key = 'fi_payment_methods.payment_method_id';
+    
+    public function default_select()
+    {
+        $this->db->select('SQL_CALC_FOUND_ROWS *', FALSE);
+    }
 	
 	public function order_by()
 	{

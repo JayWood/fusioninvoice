@@ -11,8 +11,8 @@ if (!defined('BASEPATH'))
  * @package		FusionInvoice
  * @author		Jesse Terry
  * @copyright	Copyright (c) 2012 - 2013, Jesse Terry
- * @license		http://www.fusioninvoice.com/license.txt
- * @link		http://www.fusioninvoice.
+ * @license		http://www.fusioninvoice.com/support/page/license-agreement
+ * @link		http://www.fusioninvoice.com
  * 
  */
 
@@ -32,9 +32,12 @@ class Import extends Admin_Controller {
         $this->load->model('mdl_import');
     }
 
-    public function index()
+    public function index($page = 0)
     {
-        $this->layout->set('imports', $this->mdl_import->paginate()->result());
+        $this->mdl_import->paginate(site_url('import/index'), $page);
+        $imports = $this->mdl_import->result();
+        
+        $this->layout->set('imports', $imports);
         $this->layout->buffer('content', 'import/index');
         $this->layout->render();
     }

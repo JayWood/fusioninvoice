@@ -39,11 +39,13 @@
 								<i class="icon-pencil"></i> <?php echo lang('edit'); ?>
 							</a>
 						</li>
+                        <?php if ($user->user_id <> 1) { ?>
 						<li>
 							<a href="<?php echo site_url('users/delete/' . $user->user_id); ?>" onclick="return confirm('<?php echo lang('delete_record_warning'); ?>');">
 								<i class="icon-trash"></i> <?php echo lang('delete'); ?>
 							</a>
 						</li>
+                        <?php } ?>
 					</ul>
 				</div>
 			</td>

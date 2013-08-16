@@ -233,6 +233,10 @@
        width: 70px;
        margin-right: 10px;
    }
+   
+   .profile dl.profile-custom dd span {
+       width: 160px;
+   }
 
    .notes textarea {
       resize: both;
@@ -278,7 +282,6 @@
 
 .widget {
     border: 1px solid #DDDDDD;
-    border-radius: 5px 5px 5px 5px;
     margin-top: 20px;
 }
 
@@ -357,4 +360,9 @@ legend, .install-step h2 {
     width: 100%;
 }
 
-/* Jesse */
+.login-logo {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 15px;
+}

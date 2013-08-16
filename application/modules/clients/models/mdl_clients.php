@@ -11,8 +11,8 @@ if (!defined('BASEPATH'))
  * @package		FusionInvoice
  * @author		Jesse Terry
  * @copyright	Copyright (c) 2012 - 2013, Jesse Terry
- * @license		http://www.fusioninvoice.com/license.txt
- * @link		http://www.fusioninvoice.
+ * @license		http://www.fusioninvoice.com/support/page/license-agreement
+ * @link		http://www.fusioninvoice.com
  * 
  */
 
@@ -25,7 +25,7 @@ class Mdl_Clients extends Response_Model {
 
     public function default_select()
     {
-        $this->db->select('fi_client_custom.*, fi_clients.*');
+        $this->db->select('SQL_CALC_FOUND_ROWS fi_client_custom.*, fi_clients.*', FALSE);
     }
 
     public function default_join()
@@ -96,11 +96,11 @@ class Mdl_Clients extends Response_Model {
 
         return $db_array;
     }
-    
+
     public function delete($id)
     {
         parent::delete($id);
-        
+
         $this->load->helper('orphan');
         delete_orphans();
     }
@@ -122,31 +122,39 @@ class Mdl_Clients extends Response_Model {
                 'client_name' => $client_name
             );
 
-            $this->db->insert('fi_clients', $db_array);
-
-            $client_id = $this->db->insert_id();
+            $client_id = parent::save(NULL, $db_array);
         }
 
         return $client_id;
     }
 
-    public function with_totals()
+    public function with_total()
     {
-        $this->select("IFNULL((SELECT SUM(invoice_total) FROM fi_invoice_amounts WHERE invoice_id IN (SELECT invoice_id FROM fi_invoices WHERE fi_invoices.client_id = fi_clients.client_id)), 0) AS client_invoice_total", false);
-        $this->select("IFNULL((SELECT SUM(invoice_paid) FROM fi_invoice_amounts WHERE invoice_id IN (SELECT invoice_id FROM fi_invoices WHERE fi_invoices.client_id = fi_clients.client_id)), 0) AS client_invoice_paid", false);
-        $this->select("IFNULL((SELECT SUM(invoice_balance) FROM fi_invoice_amounts WHERE invoice_id IN (SELECT invoice_id FROM fi_invoices WHERE fi_invoices.client_id = fi_clients.client_id)), 0) AS client_invoice_balance", false);
+        $this->filter_select("IFNULL((SELECT SUM(invoice_total) FROM fi_invoice_amounts WHERE invoice_id IN (SELECT invoice_id FROM fi_invoices WHERE fi_invoices.client_id = fi_clients.client_id)), 0) AS client_invoice_total", FALSE);
+        return $this;
+    }
+
+    public function with_total_paid()
+    {
+        $this->filter_select("IFNULL((SELECT SUM(invoice_paid) FROM fi_invoice_amounts WHERE invoice_id IN (SELECT invoice_id FROM fi_invoices WHERE fi_invoices.client_id = fi_clients.client_id)), 0) AS client_invoice_paid", FALSE);
+        return $this;
+    }
+
+    public function with_total_balance()
+    {
+        $this->filter_select("IFNULL((SELECT SUM(invoice_balance) FROM fi_invoice_amounts WHERE invoice_id IN (SELECT invoice_id FROM fi_invoices WHERE fi_invoices.client_id = fi_clients.client_id)), 0) AS client_invoice_balance", FALSE);
         return $this;
     }
 
     public function is_active()
     {
-        $this->where('client_active', 1);
+        $this->filter_where('client_active', 1);
         return $this;
     }
 
     public function is_inactive()
     {
-        $this->where('client_active', 0);
+        $this->filter_where('client_active', 0);
         return $this;
     }
 

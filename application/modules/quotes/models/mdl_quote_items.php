@@ -11,19 +11,20 @@ if (!defined('BASEPATH'))
  * @package		FusionInvoice
  * @author		Jesse Terry
  * @copyright	Copyright (c) 2012 - 2013, Jesse Terry
- * @license		http://www.fusioninvoice.com/license.txt
- * @link		http://www.fusioninvoice.
+ * @license		http://www.fusioninvoice.com/support/page/license-agreement
+ * @link		http://www.fusioninvoice.com
  * 
  */
 
 class Mdl_Quote_Items extends Response_Model {
 
-    public $table       = 'fi_quote_items';
-    public $primary_key = 'fi_quote_items.item_id';
-
+    public $table              = 'fi_quote_items';
+    public $primary_key        = 'fi_quote_items.item_id';
+    public $date_created_field  = 'item_date_added';
+    
     public function default_select()
     {
-        $this->db->select('fi_quote_item_amounts.*, fi_quote_items.*');
+        $this->db->select('fi_quote_item_amounts.*, fi_quote_items.*, item_tax_rates.tax_rate_percent AS item_tax_rate_percent');
     }
 
     public function default_order_by()
@@ -34,17 +35,18 @@ class Mdl_Quote_Items extends Response_Model {
     public function default_join()
     {
         $this->db->join('fi_quote_item_amounts', 'fi_quote_item_amounts.item_id = fi_quote_items.item_id', 'left');
+        $this->db->join('fi_tax_rates AS item_tax_rates', 'item_tax_rates.tax_rate_id = fi_quote_items.item_tax_rate_id', 'left');
     }
 
     public function validation_rules()
     {
         return array(
-            'quote_id'         => array(
+            'quote_id' => array(
                 'field' => 'quote_id',
-                'label' => lang('invoice'),
+                'label' => lang('quote'),
                 'rules' => 'required'
             ),
-            'item_name'        => array(
+            'item_name' => array(
                 'field' => 'item_name',
                 'label' => lang('item_name'),
                 'rules' => 'required'
@@ -53,15 +55,19 @@ class Mdl_Quote_Items extends Response_Model {
                 'field' => 'item_description',
                 'label' => lang('description')
             ),
-            'item_quantity'    => array(
+            'item_quantity' => array(
                 'field' => 'item_quantity',
                 'label' => lang('quantity'),
                 'rules' => 'required'
             ),
-            'item_price'       => array(
+            'item_price' => array(
                 'field' => 'item_price',
                 'label' => lang('price'),
                 'rules' => 'required'
+            ),
+            'item_tax_rate_id' => array(
+                'field' => 'item_tax_rate_id',
+                'label' => lang('item_tax_rate')
             )
         );
     }
@@ -75,6 +81,8 @@ class Mdl_Quote_Items extends Response_Model {
 
         $this->load->model('quotes/mdl_quote_amounts');
         $this->mdl_quote_amounts->calculate($quote_id);
+
+        return $id;
     }
 
     public function delete($item_id)

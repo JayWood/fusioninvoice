@@ -64,5 +64,17 @@
 			</select>
 		</div>
 	</div>
+    
+	<div class="control-group">
+		<label class="control-label"><?php echo lang('online_payment_method'); ?>: </label>
+		<div class="controls">
+			<select name="settings[online_payment_method]">
+                <option value=""></option>
+                <?php foreach ($payment_methods as $payment_method) { ?>
+                <option value="<?php echo $payment_method->payment_method_id; ?>" <?php if ($this->mdl_settings->setting('online_payment_method') == $payment_method->payment_method_id) { ?>selected="selected"<?php } ?>><?php echo $payment_method->payment_method_name; ?></option>
+                <?php } ?>
+			</select>
+		</div>
+	</div>
 
 </div>

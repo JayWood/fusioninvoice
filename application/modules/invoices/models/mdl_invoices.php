@@ -11,8 +11,8 @@ if (!defined('BASEPATH'))
  * @package		FusionInvoice
  * @author		Jesse Terry
  * @copyright	Copyright (c) 2012 - 2013, Jesse Terry
- * @license		http://www.fusioninvoice.com/license.txt
- * @link		http://www.fusioninvoice.
+ * @license		http://www.fusioninvoice.com/support/page/license-agreement
+ * @link		http://www.fusioninvoice.com
  * 
  */
 
@@ -25,7 +25,7 @@ class Mdl_Invoices extends Response_Model {
     public function default_select()
     {
         $this->db->select("
-            fi_invoice_custom.*,
+            SQL_CALC_FOUND_ROWS fi_invoice_custom.*,
             fi_client_custom.*,
             fi_user_custom.*,
             fi_users.user_name, 
@@ -55,6 +55,7 @@ class Mdl_Invoices extends Response_Model {
 			WHEN ((invoice_balance > 0 OR invoice_balance IS NULL OR invoice_total = 0) AND invoice_date_due >= now()) THEN 'Open'
 			WHEN (invoice_balance = 0 and invoice_total > 0) THEN 'Closed'
 			ELSE 'Unknown' END) AS invoice_status,
+            (CASE (SELECT COUNT(*) FROM fi_invoices_recurring WHERE fi_invoices_recurring.invoice_id = fi_invoices.invoice_id and fi_invoices_recurring.recur_next_date <> '0000-00-00') WHEN 0 THEN 0 ELSE 1 END) AS invoice_is_recurring,
 			fi_invoices.*", FALSE);
     }
 
@@ -105,7 +106,7 @@ class Mdl_Invoices extends Response_Model {
             'invoice_number'       => array(
                 'field' => 'invoice_number',
                 'label' => lang('invoice_number'),
-                'rules' => 'required'
+                'rules' => 'required|is_unique[fi_invoices.invoice_number' . (($this->id) ? '.invoice_id.' . $this->id : '') . ']'
             ),
             'invoice_date_created' => array(
                 'field' => 'invoice_date_created',
@@ -153,6 +154,47 @@ class Mdl_Invoices extends Response_Model {
         return random_string('unique');
     }
 
+    /**
+     * Copies invoice items, tax rates, etc from source to target
+     * @param int $source_id
+     * @param int $target_id
+     */
+    public function copy_invoice($source_id, $target_id)
+    {
+        $this->load->model('invoices/mdl_items');
+        
+        $invoice_items = $this->mdl_items->where('invoice_id', $source_id)->get()->result();
+
+        foreach ($invoice_items as $invoice_item)
+        {
+            $db_array = array(
+                'invoice_id'       => $target_id,
+                'item_tax_rate_id' => $invoice_item->item_tax_rate_id,
+                'item_name'        => $invoice_item->item_name,
+                'item_description' => $invoice_item->item_description,
+                'item_quantity'    => $invoice_item->item_quantity,
+                'item_price'       => $invoice_item->item_price,
+                'item_order'       => $invoice_item->item_order
+            );
+
+            $this->mdl_items->save($target_id, NULL, $db_array);
+        }
+
+        $invoice_tax_rates = $this->mdl_invoice_tax_rates->where('invoice_id', $source_id)->get()->result();
+
+        foreach ($invoice_tax_rates as $invoice_tax_rate)
+        {
+            $db_array = array(
+                'invoice_id'              => $target_id,
+                'tax_rate_id'             => $invoice_tax_rate->tax_rate_id,
+                'include_item_tax'        => $invoice_tax_rate->include_item_tax,
+                'invoice_tax_rate_amount' => $invoice_tax_rate->invoice_tax_rate_amount
+            );
+
+            $this->mdl_invoice_tax_rates->save($target_id, NULL, $db_array);
+        }
+    }
+
     public function db_array()
     {
         $db_array = parent::db_array();
@@ -163,21 +205,27 @@ class Mdl_Invoices extends Response_Model {
         unset($db_array['client_name']);
 
         $db_array['invoice_date_created'] = date_to_mysql($db_array['invoice_date_created']);
-
-        // Calculate the invoice date due
-        $invoice_due_date             = new DateTime($db_array['invoice_date_created']);
-        $invoice_due_date->add(new DateInterval('P' . $this->mdl_settings->setting('invoices_due_after') . 'D'));
-        $db_array['invoice_date_due'] = $invoice_due_date->format('Y-m-d');
-
-        // Get the next invoice number for the selected invoice group
-        $this->load->model('invoice_groups/mdl_invoice_groups');
-        $db_array['invoice_number'] = $this->mdl_invoice_groups->generate_invoice_number($db_array['invoice_group_id']);
-        $db_array['invoice_terms']  = $this->mdl_settings->setting('default_invoice_terms');
+        $db_array['invoice_date_due']     = $this->get_date_due($db_array['invoice_date_created']);
+        $db_array['invoice_number']       = $this->get_invoice_number($db_array['invoice_group_id']);
+        $db_array['invoice_terms']        = $this->mdl_settings->setting('default_invoice_terms');
 
         // Generate the unique url key
         $db_array['invoice_url_key'] = $this->get_url_key();
 
         return $db_array;
+    }
+
+    public function get_invoice_number($invoice_group_id)
+    {
+        $this->load->model('invoice_groups/mdl_invoice_groups');
+        return $this->mdl_invoice_groups->generate_invoice_number($invoice_group_id);
+    }
+
+    public function get_date_due($invoice_date_created)
+    {
+        $invoice_date_due = new DateTime($invoice_date_created);
+        $invoice_date_due->add(new DateInterval('P' . $this->mdl_settings->setting('invoices_due_after') . 'D'));
+        return $invoice_date_due->format('Y-m-d');
     }
 
     public function delete($invoice_id)
@@ -191,27 +239,27 @@ class Mdl_Invoices extends Response_Model {
     public function is_open()
     {
         // Optional function to retrieve invoices with balance
-        $this->having('invoice_status', 'Open');
+        $this->filter_having('invoice_status', 'Open');
         return $this;
     }
 
     public function is_closed()
     {
         // Optional function to retrieve invoices without balance
-        $this->having('invoice_status', 'Closed');
+        $this->filter_having('invoice_status', 'Closed');
         return $this;
     }
 
     public function is_overdue()
     {
         // Optional function to retrieve overdue invoices
-        $this->having('invoice_status', 'Overdue');
+        $this->filter_having('invoice_status', 'Overdue');
         return $this;
     }
 
     public function by_client($client_id)
     {
-        $this->where('fi_invoices.client_id', $client_id);
+        $this->filter_where('fi_invoices.client_id', $client_id);
         return $this;
     }
 

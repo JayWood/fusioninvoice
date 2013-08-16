@@ -84,10 +84,10 @@
     <body>
 
         <div id="menu-container">
-            <div class="alert alert-info">
-            <a href="<?php echo site_url('guest/view/generate_invoice_pdf/' . $invoice_url_key); ?>" class="btn btn-primary"><i class="icon-white icon-print"></i> Open PDF</a> 
-            <?php if ($this->mdl_settings->setting('merchant_enabled') == 1) { ?><a href="<?php echo site_url('guest/payment_handler/make_payment/' . $invoice_url_key); ?>" class="btn btn-success"><i class="icon-white icon-ok"></i> Make Payment</a><?php } ?>
-            </div>
+            
+            <a href="<?php echo site_url('guest/view/generate_invoice_pdf/' . $invoice_url_key); ?>" class="btn btn-primary"><i class="icon-white icon-print"></i> <?php echo lang('download_pdf'); ?></a> 
+            <?php if ($this->mdl_settings->setting('merchant_enabled') == 1 and $invoice->invoice_balance > 0) { ?><a href="<?php echo site_url('guest/payment_handler/make_payment/' . $invoice_url_key); ?>" class="btn btn-success"><i class="icon-white icon-ok"></i> <?php echo lang('pay_now'); ?></a><?php } ?>
+            
             <?php if ($flash_message) { ?>
             <div class="alert flash-message">
                 <?php echo $flash_message; ?>
@@ -101,6 +101,7 @@
                 <table>
                     <tr>
                         <td id="company-name">
+                            <?php echo invoice_logo(); ?>
                             <h2><?php echo $invoice->user_name; ?></h2>
                             <p><?php if ($invoice->user_address_1) { echo $invoice->user_address_1 . '<br>'; } ?>
                                 <?php if ($invoice->user_address_2) { echo $invoice->user_address_2 . '<br>'; } ?>
@@ -142,7 +143,7 @@
                                     </tr>
                                     <tr>
                                         <td><?php echo lang('amount_due'); ?></td>
-                                        <td><?php echo format_currency($invoice->invoice_total); ?></td>
+                                        <td><?php echo format_currency($invoice->invoice_balance); ?></td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -176,6 +177,13 @@
                             <td><?php echo lang('subtotal'); ?>:</td>
                             <td><?php echo format_currency($invoice->invoice_item_subtotal); ?></td>
                         </tr>
+                        <?php if ($invoice->invoice_item_tax_total > 0) { ?>
+                        <tr>
+                                <td class="no-bottom-border" colspan="3"></td>
+                                <td><?php echo lang('item_tax'); ?></td>
+                                <td><?php echo format_currency($invoice->invoice_item_tax_total); ?></td>
+                        </tr>
+                        <?php } ?>
                         <?php foreach ($invoice_tax_rates as $invoice_tax_rate) : ?>
                             <tr>    
                                 <td class="no-bottom-border" colspan="3"></td>
@@ -204,7 +212,7 @@
                 
                 <?php if ($invoice->invoice_terms) { ?>
                 <h4><?php echo lang('terms'); ?></h4>
-                <p><?php echo $invoice->invoice_terms; ?></p>
+                <p><?php echo nl2br($invoice->invoice_terms); ?></p>
                 <?php } ?>
             </div>
 
