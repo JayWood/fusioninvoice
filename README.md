@@ -25,8 +25,7 @@ Todo:
 - [x] Commit latest FI Build
 - [ ] Update/Create Wiki
 
-Tagging Convention:
--------------
+Branch Information:
+------------------------
 
-* Tags that have an `o` appended to the end are 'Official releases' from the fusion invoice developer.
-* Tags with an `m` appended are modified releses here on github.
+* For the official releases of Fusion Invoice you can go to the `Official` branch.
